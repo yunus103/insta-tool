@@ -1,16 +1,17 @@
 // public/js/ui.js
 
 /**
- * Render search results (locations)
- * @param {Array} locations - Array of location objects from API
- * @param {Function} onLocationClick - callback(locationId) when user clicks a location
+ * Renders the list of found locations.
+ * @param {Array} locations - Array of location objects.
+ * @param {Function} onLocationClick - Callback for when a location is clicked.
  */
 export function renderLocationResults(locations, onLocationClick) {
   const container = document.getElementById('location-results');
-  container.innerHTML = '';
+  container.innerHTML = ''; // Clear previous results
 
   if (!locations || locations.length === 0) {
-    container.textContent = 'No locations found.';
+    // A toast is better than text in the container for "not found"
+    // The app.js logic already handles showing this toast
     return;
   }
 
@@ -27,20 +28,24 @@ export function renderLocationResults(locations, onLocationClick) {
 }
 
 /**
- * Render posts for a given location
- * @param {Array} posts - Array of post objects from API
+ * Renders posts into the container.
+ * @param {Array} posts - Array of post objects from the API.
+ * @param {boolean} append - If true, appends posts; otherwise, overwrites.
  */
 export function renderPosts(posts, append = false) {
   const container = document.getElementById('posts-container');
-  if (!append) container.innerHTML = '';
+  if (!append) {
+    container.innerHTML = '';
+  }
 
   posts.forEach(post => {
-    const captionText = post.caption?.text || 'No caption';
-
-    // Fallback to owner or user object
-    const username = post.owner?.username || post.user?.username || 'Unknown';
-    const fullName = post.owner?.full_name || post.user?.full_name || '';
-    const isVerified = post.owner?.is_verified || post.user?.is_verified ? ' ✔️' : '';
+    const captionText = post.caption?.text || 'No caption available.';
+    
+    // Fallback logic for user data
+    const user = post.owner || post.user || {};
+    const username = user.username || 'Unknown';
+    const fullName = user.full_name || '';
+    const isVerified = user.is_verified ? '✔️' : '';
 
     const createdAtUnix = post.caption?.created_at || post.taken_at;
     const createdAt = createdAtUnix
@@ -49,7 +54,10 @@ export function renderPosts(posts, append = false) {
 
     const likeCount = post.like_count ?? 0;
     const commentCount = post.comment_count ?? 0;
-    const taggedUsers = post.caption?.mentions?.join(', ') || 'None';
+    const taggedUsers = post.caption?.mentions?.length > 0
+      ? post.caption.mentions.join(', ')
+      : 'None';
+    
     const postUrl = post.code
       ? `https://www.instagram.com/p/${post.code}/`
       : "#";
@@ -57,11 +65,14 @@ export function renderPosts(posts, append = false) {
     const div = document.createElement('div');
     div.className = 'post-item';
     div.innerHTML = `
-      <p><strong>@${username}${isVerified}</strong> (${fullName}) — ${createdAt}</p>
+      <p>
+        <strong>@${username}</strong>${isVerified}
+        ${fullName ? `(${fullName})` : ''} — <small>${createdAt}</small>
+      </p>
       <p>${captionText}</p>
       <p>❤️ ${likeCount} | 💬 ${commentCount}</p>
       <p><em>Tagged: ${taggedUsers}</em></p>
-      <a href="${postUrl}" target="_blank" rel="noopener noreferrer">Link</a>
+      <a href="${postUrl}" target="_blank" rel="noopener noreferrer">View on Instagram</a>
     `;
     container.appendChild(div);
   });
@@ -89,13 +100,40 @@ export function renderMetrics(metrics) {
  * @param {string} message
  * @param {string} type - 'error' | 'success' | 'info'
  */
-export function showToast(message, type = 'info') {
+/**
+ * Creates and displays a toast notification.
+ * @param {string} message - The message to display.
+ * @param {string} type - 'error' or 'success'.
+ */
+export function showToast(message, type = 'error') {
   const container = document.getElementById('toast-container');
-  container.textContent = message;
-  container.className = `toast ${type} show`;
-
-  // Auto-hide after 3s
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  
+  container.appendChild(toast);
+  
+  // Trigger the animation
   setTimeout(() => {
-    container.classList.remove('show');
+    toast.classList.add('show');
+  }, 100); // Small delay to allow element to be added to DOM
+
+  // Hide and remove the toast after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    // Remove the element after the fade-out animation completes
+    toast.addEventListener('transitionend', () => toast.remove());
   }, 3000);
+}
+
+
+/** Shows the loading spinner overlay. */
+export function showLoader() {
+  document.getElementById('loader').classList.add('show');
+}
+
+/** Hides the loading spinner overlay. */
+export function hideLoader() {
+  document.getElementById('loader').classList.remove('show');
 }
