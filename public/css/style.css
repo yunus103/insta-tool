@@ -1,0 +1,62 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f4f4f4;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#search-form input {
+  padding: 8px;
+  width: 200px;
+}
+
+#search-form button {
+  padding: 8px 12px;
+}
+
+#location-results .location-item {
+  padding: 10px;
+  margin: 5px 0;
+  background: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#location-results .location-item:hover {
+  background: #e0e0e0;
+}
+
+#posts-container .post-item {
+  background: #fff;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+#posts-container img {
+  max-width: 100%;
+  border-radius: 5px;
+}
+
+.metrics p {
+  margin: 5px 0;
+  font-weight: bold;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff4d4d;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  display: none;
+}
