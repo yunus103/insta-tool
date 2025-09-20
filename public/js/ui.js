@@ -41,33 +41,39 @@ export function renderPosts(posts) {
 
   posts.forEach(post => {
     const captionText = post.caption?.text || 'No caption';
-    const username = post.caption?.user?.username || 'Unknown';
+
+    // Pick username/fullName from owner first, then user, fallback to 'Unknown'
+    const username = post.owner?.username || post.user?.username || 'Unknown';
+    const fullName = post.owner?.full_name || post.user?.full_name || '';
+    const isVerified = (post.owner?.is_verified ?? post.user?.is_verified) ? ' ✔️' : '';
+
     const createdAtUnix = post.caption?.created_at || post.taken_at;
     const createdAt = createdAtUnix
       ? new Date(createdAtUnix * 1000).toLocaleString()
       : 'Unknown date';
+
     const likeCount = post.like_count ?? 0;
     const commentCount = post.comment_count ?? 0;
     const taggedUsers = post.caption?.mentions?.join(', ') || 'None';
+
     // Post URL
-    const postUrl = post.code
-      ? `https://www.instagram.com/p/${post.code}/`
-      : "#";
+    const postUrl = post.code ? `https://www.instagram.com/p/${post.code}/` : "#";
 
     const div = document.createElement('div');
     div.className = 'post-item';
     div.innerHTML = `
-      <p><strong>@${username}</strong> — ${createdAt}</p>
+      <p><strong>@${username}${isVerified}</strong> (${fullName}) — ${createdAt}</p>
       <p>${captionText}</p>
       <p>❤️ ${likeCount} | 💬 ${commentCount}</p>
       <p><em>Tagged: ${taggedUsers}</em></p>
-      <a href="${postUrl}" target="_blank" rel="noopener noreferrer">
-        Link
-      </a>
+      <a href="${postUrl}" target="_blank" rel="noopener noreferrer">Link</a>
     `;
     container.appendChild(div);
   });
 }
+
+
+
 
 /**
  * Render metrics (totals/averages)
