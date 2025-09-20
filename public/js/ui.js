@@ -30,22 +30,17 @@ export function renderLocationResults(locations, onLocationClick) {
  * Render posts for a given location
  * @param {Array} posts - Array of post objects from API
  */
-export function renderPosts(posts) {
+export function renderPosts(posts, append = false) {
   const container = document.getElementById('posts-container');
-  container.innerHTML = '';
-
-  if (!posts || posts.length === 0) {
-    container.textContent = 'No posts found for this location.';
-    return;
-  }
+  if (!append) container.innerHTML = '';
 
   posts.forEach(post => {
     const captionText = post.caption?.text || 'No caption';
 
-    // Pick username/fullName from owner first, then user, fallback to 'Unknown'
+    // Fallback to owner or user object
     const username = post.owner?.username || post.user?.username || 'Unknown';
     const fullName = post.owner?.full_name || post.user?.full_name || '';
-    const isVerified = (post.owner?.is_verified ?? post.user?.is_verified) ? ' ✔️' : '';
+    const isVerified = post.owner?.is_verified || post.user?.is_verified ? ' ✔️' : '';
 
     const createdAtUnix = post.caption?.created_at || post.taken_at;
     const createdAt = createdAtUnix
@@ -55,9 +50,9 @@ export function renderPosts(posts) {
     const likeCount = post.like_count ?? 0;
     const commentCount = post.comment_count ?? 0;
     const taggedUsers = post.caption?.mentions?.join(', ') || 'None';
-
-    // Post URL
-    const postUrl = post.code ? `https://www.instagram.com/p/${post.code}/` : "#";
+    const postUrl = post.code
+      ? `https://www.instagram.com/p/${post.code}/`
+      : "#";
 
     const div = document.createElement('div');
     div.className = 'post-item';

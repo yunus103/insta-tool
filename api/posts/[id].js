@@ -1,11 +1,11 @@
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  const { id } = req.query;  // Vercel gives dynamic params in req.query
+  const { id, pagination_token } = req.query;  // Vercel gives dynamic params in req.query
   if (!id) return res.status(400).json({ error: 'Missing location id' });
 
   try {
-    const url = `https://instagram-social-api.p.rapidapi.com/v1/location_posts?location_id=${encodeURIComponent(id)}`;
+    const url = `https://instagram-social-api.p.rapidapi.com/v1/location_posts?location_id=${encodeURIComponent(id)}${pagination_token ? `&pagination_token=${encodeURIComponent(pagination_token)}` : ''}`;
     const options = {
       method: 'GET',
       headers: {

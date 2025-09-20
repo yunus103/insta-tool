@@ -11,7 +11,11 @@ const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
 const locationResults = document.getElementById('location-results');
 const postsContainer = document.getElementById('posts-container');
+const loadMoreBtn = document.getElementById('load-more-btn');
 //const metricsContainer = document.getElementById('metrics-container');
+
+let currentLocationId = null;
+let nextPageToken = null;
 
 // --- Search handler ---
 async function handleSearch() {
@@ -46,34 +50,31 @@ async function handleSearch() {
 }
 
 // --- Location click handler ---
-async function handleLocationClick(locationId) {
-  try {
-    const result = await getPostsByLocation(locationId);
+async function handleLocationClick(locationId, loadMore = false) {
+  if (!loadMore) {
+    currentLocationId = locationId;
+    nextPageToken = null;
+    postsContainer.innerHTML = ''; // clear previous posts
+    locationResults.innerHTML = ''; // hide locations
+    loadMoreBtn.style.display = 'none'; // hide initially
+  }
 
-    // Extract posts array
-    const posts = result?.data?.items || [];
+  try {
+    const result = await getPostsByLocation(currentLocationId, nextPageToken);
+    const posts = result.items;
+    nextPageToken = result.paginationToken; // <-- now correctly updated
 
     if (posts.length === 0) {
-      renderPosts([]);
-      renderMetrics({});
+      renderPosts([], loadMore);
       showToast('No posts found for this location.', 'error');
       return;
     }
 
-    renderPosts(posts);
+    renderPosts(posts, loadMore);
 
-    // hide locations after showing posts
-    locationResults.innerHTML = '';
-
-    // Calculate simple metrics
-    const totalLikes = posts.reduce((sum, p) => sum + (p.like_count || 0), 0);
-    const totalComments = posts.reduce((sum, p) => sum + (p.comment_count || 0), 0);
-
-    //Metrics disabled for now
-    //const avgLikes = (totalLikes / posts.length).toFixed(1);
-    //const avgComments = (totalComments / posts.length).toFixed(1);
-
-    //renderMetrics({ totalLikes, avgLikes, totalComments, avgComments });
+    // Show/hide load more button
+    console.log(nextPageToken);
+    loadMoreBtn.style.display = nextPageToken ? 'block' : 'none';
   } catch (err) {
     console.error('Error fetching posts:', err);
     showToast('Failed to fetch posts. Try again.', 'error');
@@ -81,8 +82,10 @@ async function handleLocationClick(locationId) {
 }
 
 
+
 // --- Wire up events ---
 searchBtn.addEventListener('click', handleSearch);
 searchInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') handleSearch();
 });
+loadMoreBtn.addEventListener('click', () => handleLocationClick(currentLocationId, true));
