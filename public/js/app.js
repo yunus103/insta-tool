@@ -1,13 +1,15 @@
 // public/js/app.js
-import { searchLocations, getPostsByLocation } from './api.js';
+import { searchLocations, getPostsByLocation, findPlace, getReviews } from './api.js';
 import {
   renderLocationResults,
   renderPosts,
   renderMetrics,
   showToast,
   showLoader,
-  hideLoader
+  hideLoader,
+  renderReviews 
 } from './ui.js';
+
 
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
@@ -23,10 +25,16 @@ const tabButtons = document.querySelectorAll('.tab-btn');
 const tabPanels = document.querySelectorAll('.tab-panel');
 //const metricsContainer = document.getElementById('metrics-container');
 
+const analyzeBtn = document.getElementById('analyze-reviews-btn'); 
+const reviewsContainer = document.getElementById('reviews-container');
+
 let currentLocationId = null;
 let nextPageToken = null;
 let allPostsForLocation = [];
+let currentInstaLocation = null;
 
+let fullReviewsData = null; // Will store the complete API response
+let activeReviewFilter = 'all'; // 'all', '5', '4', '3', '2', '1'
 
 
 // --- Search handler ---
@@ -56,6 +64,8 @@ async function handleSearch() {
   postsContainer.innerHTML = '';
   loadMoreBtn.style.display = 'none';
   tabContainer.style.display = 'none';
+  reviewsContainer.innerHTML = '';
+  document.getElementById('business-summary').innerHTML = '';
 } catch (err) {
   console.error('Error searching locations:', err);
   showToast('Failed to fetch locations. Try again.', 'error');
@@ -66,9 +76,9 @@ async function handleSearch() {
 }
 
 // --- Location click handler ---
-async function handleLocationClick(locationId, loadMore = false) {
+async function handleLocationClick(locationObject, loadMore = false) {
   if (!loadMore) {
-    currentLocationId = locationId;
+    currentLocationId = locationObject.id;
     nextPageToken = null;
     postsContainer.innerHTML = ''; // clear previous posts
     locationResults.innerHTML = ''; // hide locations
@@ -76,6 +86,7 @@ async function handleLocationClick(locationId, loadMore = false) {
     tabContainer.style.display = 'block';
     allPostsForLocation = [];   // Reset the list of all posts when a new location is chosen
 
+    currentInstaLocation = locationObject;
     
   }
 
@@ -166,6 +177,64 @@ const handleTabClick = (e) => {
   document.getElementById(targetTab).classList.add('active');
 };
 
+async function analyzeLocationReviews() {
+  const reviewsContainer = document.getElementById('reviews-container');
+  const summaryContainer = document.getElementById('business-summary');
+
+  if (!currentInstaLocation) {
+    showToast('Please select a location first.', 'error');
+    return;
+  }
+  // Clear previous results
+  summaryContainer.innerHTML = '';
+  reviewsContainer.innerHTML = '<div class="loader-inline"></div>'; // Show a loading indicator
+
+  showLoader();
+  try {
+    // Step 1: Find the Google Place ID
+    const businessData  = await findPlace(
+      currentInstaLocation.name,
+      currentInstaLocation.latitude,
+      currentInstaLocation.longitude
+    );
+
+    // --- NEW: Immediately display the summary info ---
+    if (businessData) {
+      summaryContainer.innerHTML = `
+        <div class="summary-card">
+          <div class="summary-item">
+            <span class="summary-value">${businessData.rating} ★</span>
+            <span class="summary-label">Overall Rating</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-value">${businessData.reviewCount}</span>
+            <span class="summary-label">Total Reviews</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Step 2: Use the Place ID to get reviews
+        const reviewsData = await getReviews(businessData.businessId, businessData.reviewCount);
+    
+    // Store the full, unmodified data
+    fullReviewsData = reviewsData;
+    // Reset the filter to 'all' for the new data
+    activeReviewFilter = 'all';
+
+    // Step 3: Render the reviews
+    renderReviews(fullReviewsData, activeReviewFilter);
+
+  } catch (error) {
+    summaryContainer.innerHTML = '';
+    reviewsContainer.innerHTML = `<p class="error-message">${error.message}</p>`;
+    showToast(error.message, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+
 // --- Wire up events ---
 searchBtn.addEventListener('click', handleSearch);
 searchInput.addEventListener('keypress', (e) => {
@@ -176,3 +245,20 @@ window.addEventListener('scroll', handleScroll);
 scrollToTopBtn.addEventListener('click', handleTopClick);
 themeToggleBtn.addEventListener('click', handleThemeToggle);
 tabButtons.forEach(button => button.addEventListener('click', handleTabClick));
+analyzeBtn.addEventListener('click', analyzeLocationReviews);
+
+reviewsContainer.addEventListener('click', (e) => {
+  // Check if a filter button was clicked
+  if (e.target.classList.contains('filter-btn')) {
+    const newFilter = e.target.dataset.rating;
+    
+    // If the filter is already active, do nothing
+    if (newFilter === activeReviewFilter) return;
+
+    // Update the active filter state
+    activeReviewFilter = newFilter;
+
+    // Re-render the reviews with the new filter
+    renderReviews(fullReviewsData, activeReviewFilter);
+  }
+});

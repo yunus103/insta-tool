@@ -56,3 +56,21 @@ export async function getPostsByLocation(locationId, paginationToken = '') {
     throw err;
   }
 }
+
+
+// MAPS REVIEWS FETCH
+export async function findPlace(name, lat, lng) {
+  const res = await fetch(`/api/find-place?name=${encodeURIComponent(name)}&lat=${lat}&lng=${lng}`);
+  if (!res.ok) {
+    throw new Error('Could not find a matching place on Google Maps.');
+  }
+  return await res.json();
+}
+
+export async function getReviews(businessId, reviewCount) {
+  const res = await fetch(`/api/get-reviews?businessId=${businessId}&reviewCount=${reviewCount}`);
+  if (!res.ok) {
+    throw new Error('Could not fetch reviews for this place.');
+  }
+  return await res.json();
+}

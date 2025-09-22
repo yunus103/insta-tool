@@ -22,7 +22,7 @@ export function renderLocationResults(locations, onLocationClick) {
       <strong>${loc.name}</strong><br>
       <small>${loc.address || loc.city || 'No address available'}</small>
     `;
-    div.addEventListener('click', () => onLocationClick(loc.id));
+    div.addEventListener('click', () => onLocationClick(loc));
     container.appendChild(div);
   });
 }
@@ -137,4 +137,59 @@ export function showLoader() {
 /** Hides the loading spinner overlay. */
 export function hideLoader() {
   document.getElementById('loader').classList.remove('show');
+}
+
+export function renderReviews(data, activeFilter = 'all') { // <-- MODIFIED signature
+  const container = document.getElementById('reviews-container');
+  
+  if (!data) {
+    container.innerHTML = '<p>Click "Analyze Location" to begin.</p>';
+    return;
+  }
+  
+  const reviews = data.reviews || (data.data && data.data.reviews) || [];
+  const name = data.name || (data.data && data.data.name) || 'Reviews';
+  const rating = data.rating || (data.data && data.data.rating);
+
+  // --- FILTERING LOGIC ---
+  const filteredReviews = activeFilter === 'all'
+    ? reviews
+    : reviews.filter(review => review.rating == activeFilter);
+
+  let reviewsHtml = `<h3>${name}${rating ? ` (${rating} ★)` : ''}</h3>`;
+
+  // --- DYNAMICALLY CREATE FILTER BUTTONS ---
+  reviewsHtml += `<div id="review-filters">
+    <button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-rating="all">All</button>
+    <button class="filter-btn ${activeFilter === '5' ? 'active' : ''}" data-rating="5">5 ★</button>
+    <button class="filter-btn ${activeFilter === '4' ? 'active' : ''}" data-rating="4">4 ★</button>
+    <button class="filter-btn ${activeFilter === '3' ? 'active' : ''}" data-rating="3">3 ★</button>
+    <button class="filter-btn ${activeFilter === '2' ? 'active' : ''}" data-rating="2">2 ★</button>
+    <button class="filter-btn ${activeFilter === '1' ? 'active' : ''}" data-rating="1">1 ★</button>
+  </div>`;
+  
+  if (filteredReviews.length === 0) {
+    reviewsHtml += '<h3>No reviews found for this rating.</h3>';
+  } else {
+    // --- RENDER FILTERED REVIEWS ---
+    filteredReviews.forEach(review => {
+      const reviewDate = new Date(review.review_datetime_utc).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      reviewsHtml += `
+        <div class="review-item">
+          <div class="review-header">
+            <strong>${review.author_name}</strong>
+            <small>${reviewDate}</small>
+          </div>
+          <div class="review-rating">${review.rating} ★</div>
+          <p class="review-text">${review.review_text}</p>
+          <a href="${review.review_link}" target="_blank" rel="noopener noreferrer">View on Maps</a>
+        </div>
+      `;
+    });
+  }
+
+  container.innerHTML = reviewsHtml;
 }
