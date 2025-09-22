@@ -122,7 +122,7 @@ button:hover {
 
 #posts-container { 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsive grid */
   gap: 1.5rem;
   align-items: stretch; /* Ensures cards stretch to fill height */
   margin-top: 1.5rem; /* Add some space above the grid */
@@ -431,6 +431,8 @@ button:hover {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  overflow-wrap: break-word; /* uzun kelimeleri kır */
+  word-break: break-word;
 }
 
 .review-header {
@@ -453,6 +455,8 @@ button:hover {
 
 .review-text {
   line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .review-item a {
@@ -460,6 +464,12 @@ button:hover {
   text-decoration: none;
   font-weight: 600;
   margin-top: 0.5rem;
+}
+
+.review-text,
+.review-item a {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .review-item a:hover {
