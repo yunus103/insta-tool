@@ -43,42 +43,43 @@ export function renderPosts(posts, append = false) {
     
     // Fallback logic for user data
     const user = post.owner || post.user || {};
-    const username = user.username || 'Unknown';
+    const username = user.username || 'Bilinmeyen Kullanıcı';
     const fullName = user.full_name || '';
     const isVerified = user.is_verified ? '✔️' : '';
 
     const createdAtUnix = post.caption?.created_at || post.taken_at;
     const createdAt = createdAtUnix
       ? new Date(createdAtUnix * 1000).toLocaleString()
-      : 'Unknown date';
+      : 'Belirsiz Tarih';
 
     const likeCount = post.like_count ?? 0;
     const commentCount = post.comment_count ?? 0;
     const taggedUsers = post.caption?.mentions?.length > 0
       ? post.caption.mentions.join(', ')
-      : 'None';
+      : 'Yok';
     
     const postUrl = post.code
       ? `https://www.instagram.com/p/${post.code}/`
       : "#";
 
+    const profilePic = post.user.profile_pic_url;
+    
     const div = document.createElement('div');
     div.className = 'post-item';
     div.innerHTML = `
+      <img src="${profilePic}">
       <p>
-        <strong>@${username}</strong>${isVerified}
+        <strong>@${username}</strong> ${isVerified}
         ${fullName ? `(${fullName})` : ''} — <small>${createdAt}</small>
       </p>
       <p>${captionText}</p>
       <p>❤️ ${likeCount} | 💬 ${commentCount}</p>
-      <p><em>Tagged: ${taggedUsers}</em></p>
-      <a href="${postUrl}" target="_blank" rel="noopener noreferrer">View on Instagram</a>
+      <p><em>Etiketli Kullanıcılar: ${taggedUsers}</em></p>
+      <a href="${postUrl}" target="_blank" rel="noopener noreferrer">Instagram'da Görüntüle</a>
     `;
     container.appendChild(div);
   });
 }
-
-
 
 
 /**

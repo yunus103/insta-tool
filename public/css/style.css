@@ -128,6 +128,7 @@ button:hover {
   margin-top: 1.5rem; /* Add some space above the grid */
 }
 
+
 /* --- Card Styling (for both locations and posts) --- */
 .location-item,
 .post-item {
@@ -139,6 +140,15 @@ button:hover {
   display: flex; /* MODIFIED: Use flexbox for inner content alignment */
   flex-direction: column; /* Stack content vertically */
   justify-content: space-between; /* Push link to bottom if space allows */
+}
+
+.post-item > img {
+  width: 60px;          /* Sets a fixed width */
+  height: 60px;         /* Sets a fixed height */
+  border-radius: 50%;   /* This is the key to making it a circle */
+  object-fit: cover;    /* Prevents the image from being stretched or squished */
+  margin-bottom: 1rem;  /* Adds space between the picture and the username below it */
+  border: 2px solid var(--border-color); /* Optional: Adds a subtle border */
 }
 
 .location-item {
@@ -192,6 +202,56 @@ button:hover {
   color: var(--primary-hover-color);
   text-decoration: underline;
 }
+
+#tab-container {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.tab-nav {
+  display: flex;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.3s, border-bottom-color 0.3s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px; /* Aligns the bottom border with the nav's border */
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background-color: transparent; /* Override generic button hover */
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+/* Logic for hiding/showing tab panels */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* Placeholder styles for future content */
+.tab-panel h2 {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+/* --- END OF NEW SECTION --- */
 
 /* --- Responsive adjustments for grid --- */
 @media (max-width: 768px) {
@@ -349,4 +409,6 @@ button:hover {
 #scrollToTopBtn:hover {
   background-color: var(--primary-hover-color);
 }
+
+
 

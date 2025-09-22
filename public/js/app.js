@@ -17,10 +17,17 @@ const loadMoreBtn = document.getElementById('load-more-btn');
 const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 const themeToggleBtn = document.getElementById('theme-toggle');
 const body = document.body;
+
+const tabContainer = document.getElementById('tab-container');
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabPanels = document.querySelectorAll('.tab-panel');
 //const metricsContainer = document.getElementById('metrics-container');
 
 let currentLocationId = null;
 let nextPageToken = null;
+let allPostsForLocation = [];
+
+
 
 // --- Search handler ---
 async function handleSearch() {
@@ -48,6 +55,7 @@ async function handleSearch() {
   //Hide posts after searching again
   postsContainer.innerHTML = '';
   loadMoreBtn.style.display = 'none';
+  tabContainer.style.display = 'none';
 } catch (err) {
   console.error('Error searching locations:', err);
   showToast('Failed to fetch locations. Try again.', 'error');
@@ -65,6 +73,10 @@ async function handleLocationClick(locationId, loadMore = false) {
     postsContainer.innerHTML = ''; // clear previous posts
     locationResults.innerHTML = ''; // hide locations
     loadMoreBtn.style.display = 'none'; // hide initially
+    tabContainer.style.display = 'block';
+    allPostsForLocation = [];   // Reset the list of all posts when a new location is chosen
+
+    
   }
 
   showLoader(); // <-- SHOW loader before API call
@@ -72,6 +84,13 @@ async function handleLocationClick(locationId, loadMore = false) {
     const result = await getPostsByLocation(currentLocationId, nextPageToken);
     const posts = result.items;
     nextPageToken = result.paginationToken; // <-- now correctly updated
+
+    // Add newly fetched posts to our master list
+    allPostsForLocation.push(...posts);
+
+    if (allPostsForLocation.length === 0) {
+      showToast('No posts found for this location.', 'error');
+    }
 
     if (posts.length === 0) {
       renderPosts([], loadMore);
@@ -82,7 +101,6 @@ async function handleLocationClick(locationId, loadMore = false) {
     renderPosts(posts, loadMore);
 
     // Show/hide load more button
-    console.log(nextPageToken);
     loadMoreBtn.style.display = nextPageToken ? 'block' : 'none';
   } catch (err) {
     console.error('Error fetching posts:', err);
@@ -134,6 +152,20 @@ const savedTheme = localStorage.getItem('theme') || 'light'; // Default to light
 applyTheme(savedTheme);
 
 
+const handleTabClick = (e) => {
+  const targetTab = e.target.dataset.tab;
+
+  // Remove active class from all buttons and panels
+  tabButtons.forEach(btn => btn.classList.remove('active'));
+  tabPanels.forEach(panel => panel.classList.remove('active'));
+
+  // Add active class to the clicked button
+  e.target.classList.add('active');
+
+  // Add active class to the corresponding panel
+  document.getElementById(targetTab).classList.add('active');
+};
+
 // --- Wire up events ---
 searchBtn.addEventListener('click', handleSearch);
 searchInput.addEventListener('keypress', (e) => {
@@ -143,3 +175,4 @@ loadMoreBtn.addEventListener('click', () => handleLocationClick(currentLocationI
 window.addEventListener('scroll', handleScroll);
 scrollToTopBtn.addEventListener('click', handleTopClick);
 themeToggleBtn.addEventListener('click', handleThemeToggle);
+tabButtons.forEach(button => button.addEventListener('click', handleTabClick));

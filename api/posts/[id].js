@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (!id) return res.status(400).json({ error: 'Missing location id' });
 
   try {
-    const url = `https://instagram-social-api.p.rapidapi.com/v1/location_posts?location_id=${encodeURIComponent(id)}${pagination_token ? `&pagination_token=${encodeURIComponent(pagination_token)}` : ''}`;
+    const url = `https://instagram-social-api.p.rapidapi.com/v1/location_posts?location_id=${encodeURIComponent(id)}${pagination_token ? `&pagination_token=${encodeURIComponent(pagination_token)}` : ''}&url_embed_safe=true`;
     const options = {
       method: 'GET',
       headers: {

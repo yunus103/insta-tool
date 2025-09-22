@@ -18,21 +18,44 @@
       <input 
         type="text" 
         id="search-input" 
-        placeholder="Search for a location..."
+        placeholder="Bir konum girin..."
       >
-      <button id="search-btn">Search</button>
+      <button id="search-btn">Ara</button>
     </section>
 
     <section id="location-results">
       </section>
 
-    <section id="posts-container">
-      </section>
+     <!-- ADD THIS ENTIRE TAB CONTAINER SECTION -->
+    <!-- It's hidden by default and will be shown by JS after a location is selected -->
+    <section id="tab-container" style="display: none;">
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="posts">Gönderiler</button>
+        <button class="tab-btn" data-tab="analytics">Analiz</button>
+      </nav>
 
-    <button id="load-more-btn" style="display:none;">Load More</button>
+      <div class="tab-content">
+        <!-- Panel 1: Posts (Active by default) -->
+        <div id="posts" class="tab-panel active">
+          <!-- WE MOVED THE POSTS CONTAINER AND LOAD MORE BUTTON HERE -->
+          <section id="posts-container"></section>
+          <button id="load-more-btn" style="display:none;">Daha Fazla</button>
+        </div>
 
-    <section id="metrics-container">
-      </section>
+        <!-- Panel 2: Analytics -->
+        <div id="analytics" class="tab-panel">
+          <!-- Metrics container can be moved here or content added later -->
+          <section id="metrics-container">
+            <h2>Analiz Icerigi (Coming Soon)</h2>
+            <p>Detailed metrics and charts for this location will be displayed here.</p>
+          </section>
+        </div>
+
+        
+        
+      </div>
+    </section>
+    <!-- END OF NEW TAB CONTAINER SECTION -->
   </main>
 
   <div id="toast-container"></div>

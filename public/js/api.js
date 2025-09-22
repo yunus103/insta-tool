@@ -1,7 +1,18 @@
 // api.js - frontend helper functions to call our backend
 
+import { mockPostsResponse, mockSearchResponse } from './mock-data.js';
+
+const USE_MOCK_DATA = false;
+
 // Search for locations by name
 export async function searchLocations(query) {
+   //Developing temp api request
+   if (USE_MOCK_DATA) {
+    console.log("Using MOCK data for searchLocations");
+    return Promise.resolve(mockSearchResponse);
+  }
+  
+
   try {
     const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
     if (!res.ok) {
@@ -16,6 +27,15 @@ export async function searchLocations(query) {
 
 // Get posts by location ID
 export async function getPostsByLocation(locationId, paginationToken = '') {
+    if (USE_MOCK_DATA) {
+    console.log("Using MOCK data for getPostsByLocation");
+    // Simulate the real API response structure
+    return Promise.resolve({
+        items: mockPostsResponse?.data?.items || [],
+        paginationToken: mockPostsResponse?.pagination_token || null
+    });
+  }
+
   try {
     const url = `/api/posts/${encodeURIComponent(locationId)}${paginationToken ? `?pagination_token=${encodeURIComponent(paginationToken)}` : ''}`;
 
