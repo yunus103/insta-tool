@@ -142,6 +142,18 @@ button:hover {
   justify-content: space-between; /* Push link to bottom if space allows */
 }
 
+.post-item {
+    overflow-wrap: break-word; /* yeni nesil */
+    word-break: break-word;   
+}
+
+.post-item p,
+.post-item span,
+.post-item a {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 .post-item > img {
   width: 60px;          /* Sets a fixed width */
   height: 60px;         /* Sets a fixed height */
@@ -256,7 +268,7 @@ button:hover {
 /* --- Responsive adjustments for grid --- */
 @media (max-width: 768px) {
   #posts-container {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjust for smaller screens */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Adjust for smaller screens */
   }
 }
 
