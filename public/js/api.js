@@ -2,7 +2,7 @@
 
 import { mockPostsResponse, mockSearchResponse } from './mock-data.js';
 
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 // Search for locations by name
 export async function searchLocations(query) {
