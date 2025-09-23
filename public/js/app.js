@@ -1,5 +1,7 @@
 // public/js/app.js
-import { searchLocations, getPostsByLocation, findPlace, getReviews } from './api.js';
+import { searchLocations, getPostsByLocation, findPlace, getReviews,
+         getUserPosts, getTaggedPosts, getPostLikers
+ } from './api.js';
 import {
   renderLocationResults,
   renderPosts,
@@ -7,34 +9,80 @@ import {
   showToast,
   showLoader,
   hideLoader,
-  renderReviews 
+  renderReviews,
+  renderOwnPostLikers,
+  renderTaggedPostLikers,
+  renderAnalysis
 } from './ui.js';
 
-
+// --- UI Elementleri ---
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
-const locationResults = document.getElementById('location-results');
-const postsContainer = document.getElementById('posts-container');
-const loadMoreBtn = document.getElementById('load-more-btn');
-const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 const themeToggleBtn = document.getElementById('theme-toggle');
 const body = document.body;
+const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
+// Sekme Elementleri
 const tabContainer = document.getElementById('tab-container');
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabPanels = document.querySelectorAll('.tab-panel');
+const postsTabBtn = document.querySelector('[data-tab="posts"]');
+const analyticsTabBtn = document.querySelector('[data-tab="analytics"]');
+const customersTabBtn = document.querySelector('[data-tab="potential-customers"]');
+const ownLikersTabBtn = document.querySelector('[data-tab="own-post-likers"]');
+const taggedLikersTabBtn = document.querySelector('[data-tab="tagged-post-likers"]');
+
+// Butonlar
+const loadMoreBtn = document.getElementById('load-more-btn');
+const analyzeBtn = document.getElementById('analyze-reviews-btn'); 
+const analyzeDataBtn = document.getElementById('analyze-data-btn');
+const loadMoreOwnLikersBtn = document.getElementById('load-more-own-likers-btn');
+const loadMoreTaggedLikersBtn = document.getElementById('load-more-tagged-likers-btn');
+const exportAnalysisBtn = document.getElementById('export-analysis-btn');
+
+const locationResults = document.getElementById('location-results');
+const postsContainer = document.getElementById('posts-container');
+
+
 //const metricsContainer = document.getElementById('metrics-container');
 
-const analyzeBtn = document.getElementById('analyze-reviews-btn'); 
+
 const reviewsContainer = document.getElementById('reviews-container');
 
+// Liker and analyze ui
+const fetchAudienceBtn = document.getElementById('fetch-audience-btn');
+
+
+
+
+
+// For Location Search
 let currentLocationId = null;
 let nextPageToken = null;
 let allPostsForLocation = [];
 let currentInstaLocation = null;
 
+
+//Variables for maps reviews
 let fullReviewsData = null; // Will store the complete API response
 let activeReviewFilter = 'all'; // 'all', '5', '4', '3', '2', '1'
+
+
+//Variables for likers
+let userPostLikers = [];
+let taggedPostLikers = [];
+let isAudienceDataFetched = false;
+let nextUserPostsCursor = null;
+let nextTaggedPostsCursor = null;
+let currentUserSearch = '';
+const LIKERS_PER_PAGE = 100; // Her seferinde kaç beğenen gösterilecek
+let visibleOwnLikersCount = LIKERS_PER_PAGE;
+let visibleTaggedLikersCount = LIKERS_PER_PAGE;
+
+
+let analysisLimit = 50; // Başlangıç değeri
+const analysisLimitInput = document.getElementById('analysis-limit-input');
+const analysisControls = document.getElementById('analysis-controls');
 
 
 // --- Search handler ---
@@ -45,34 +93,123 @@ async function handleSearch() {
     return;
   }
 
-  showLoader(); // <-- SHOW loader before API call
-  try {
-  const result = await searchLocations(query);
+  // Clear all previous results from any type of search
+  document.getElementById('location-results').innerHTML = '';
+    document.getElementById('posts-container').innerHTML = '';
+    document.getElementById('business-summary').innerHTML = '';
+    document.getElementById('reviews-container').innerHTML = '';
+    document.getElementById('own-posts-likers-list').innerHTML = '';
+    document.getElementById('tagged-posts-likers-list').innerHTML = '';
+    document.getElementById('top-likers-list').innerHTML = '';
+    document.getElementById('warm-audience-list').innerHTML = '';
+    tabContainer.style.display = 'none';
 
-  // Extract items from the response
-  const locations = result?.data?.items || [];
-
-  if (locations.length === 0) {
-    renderLocationResults([], () => {});
-    showToast('No locations found.', 'error');
-    return;
+  if (query.startsWith('@')) {
+    const username = query.substring(1);
+    initializeUserSearch(username);
+    await fetchAudienceData(username);
+  } else {
+    initializeLocationSearch(query);
   }
-
-  renderLocationResults(locations, handleLocationClick);
-
-  //Hide posts after searching again
-  postsContainer.innerHTML = '';
-  loadMoreBtn.style.display = 'none';
-  tabContainer.style.display = 'none';
-  reviewsContainer.innerHTML = '';
-  document.getElementById('business-summary').innerHTML = '';
-} catch (err) {
-  console.error('Error searching locations:', err);
-  showToast('Failed to fetch locations. Try again.', 'error');
-} finally {
-    hideLoader();
 }
 
+async function fetchAudienceData(username) {
+    showLoader();
+    try {
+        // Aşama 1: Post'ları ve etiketlenen post'ları paralel olarak çek
+        const [userPostsResult, taggedPostsResult] = await Promise.all([
+            getUserPosts(username),
+            getTaggedPosts(username)
+        ]);
+
+        const userPosts = userPostsResult.posts;
+        const taggedPosts = taggedPostsResult.posts;
+        
+        // Aşama 2: Tüm post'ların ID'lerini topla ve beğenenleri paralel olarak çek
+        const allPosts = [...userPosts, ...taggedPosts];
+        const likerPromises = allPosts.map(post => getPostLikers(post.code || post.pk));
+        const likerResults = await Promise.all(likerPromises);
+        
+        // Aşama 3: Veriyi işle ve sakla
+        userPostLikers = likerResults.slice(0, userPosts.length).flat();
+        taggedPostLikers = likerResults.slice(userPosts.length).flat();
+        isAudienceDataFetched = true;
+
+        // Aşama 4: Sonuçları ekrana bas
+        renderOwnPostLikers(userPostLikers, visibleOwnLikersCount);
+        renderTaggedPostLikers(taggedPostLikers, visibleTaggedLikersCount);
+
+        // Aşama 5: Durum metinlerini güncelle
+        document.getElementById('own-likers-status').textContent = `${userPostLikers.length} beğeni bulundu.`;
+        document.getElementById('tagged-likers-status').textContent = `${taggedPostLikers.length} beğeni bulundu.`;
+
+    } catch (error) {
+        showToast(error.message, 'error');
+        document.getElementById('own-likers-status').textContent = `Bir hata oluştu: ${error.message}`;
+    } finally {
+        hideLoader();
+    }
+}
+
+// This function SETS UP the UI for a user analysis.
+function initializeUserSearch(username) {
+  currentUserSearch = username;
+  isAudienceDataFetched = false;
+  
+  // Reset data arrays
+  userPostLikers = [];
+  taggedPostLikers = [];
+
+  // Doğru sekmeleri göster, yanlışları gizle
+    tabContainer.style.display = 'block';
+    postsTabBtn.style.display = 'none';
+    analyticsTabBtn.style.display = 'none';
+    ownLikersTabBtn.style.display = 'inline-flex';
+    taggedLikersTabBtn.style.display = 'inline-flex';
+    customersTabBtn.style.display = 'inline-flex';
+
+  ownLikersTabBtn.click();
+
+  visibleOwnLikersCount = LIKERS_PER_PAGE;
+  visibleTaggedLikersCount = LIKERS_PER_PAGE;
+
+
+  
+  // Durum metinlerini güncelle
+  document.getElementById('own-likers-status').textContent = `@${username} için veriler çekiliyor...`;
+  document.getElementById('tagged-likers-status').textContent = `Veriler çekildikten sonra burada görünecek.`;
+  
+  // Hide export buttons until data is fetched
+  document.getElementById('export-analysis-btn').style.display = 'none';
+}
+
+// This function contains your OLD search logic.
+async function initializeLocationSearch(query) {
+  // Show the location-related tabs and hide the user tabs
+  postsTabBtn.style.display = 'inline-flex';
+  analyticsTabBtn.style.display = 'inline-flex';
+  ownLikersTabBtn.style.display = 'none';
+  taggedLikersTabBtn.style.display = 'none';
+  customersTabBtn.style.display = 'none';
+  postsTabBtn.click(); // Set the first tab active
+
+  showLoader();
+  try {
+    const result = await searchLocations(query);
+    const locations = result?.data?.items || [];
+
+    if (locations.length === 0) {
+      showToast('No locations found.', 'error');
+    } else {
+      // Pass the handleLocationClick function as the callback
+      renderLocationResults(locations, handleLocationClick);
+    }
+  } catch (err) {
+    console.error('Error searching locations:', err);
+    showToast('Failed to fetch locations. Try again.', 'error');
+  } finally {
+    hideLoader();
+  }
 }
 
 // --- Location click handler ---
@@ -234,6 +371,53 @@ async function analyzeLocationReviews() {
   }
 }
 
+function analyzeAudienceData() {
+    if (!isAudienceDataFetched) {
+        showToast('Lütfen önce kitle verilerini çekin.', 'error');
+        return;
+    }
+    const topLikers = rankTopLikers(userPostLikers);
+    const warmAudience = getUniqueAudience(taggedPostLikers);
+
+    renderAnalysis(topLikers, warmAudience, analysisLimit);
+    
+    analysisControls.style.display = 'block';
+
+    hideLoader();
+}
+
+
+function rankTopLikers(likersArray) {
+  if (!likersArray || likersArray.length === 0) return [];
+
+  const likerCounts = new Map();
+  // Count how many times each user appears
+  likersArray.forEach(user => {
+    if (user && user.username) {
+      const count = (likerCounts.get(user.username)?.count || 0) + 1;
+      likerCounts.set(user.username, { user, count });
+    }
+  });
+
+  // Convert map to an array, sort by count, and return the user object
+  return Array.from(likerCounts.values())
+    .sort((a, b) => b.count - a.count)
+    .map(item => ({ ...item.user, likeCount: item.count })); // Add the like count to the user object
+}
+
+function getUniqueAudience(likersArray) {
+  if (!likersArray || likersArray.length === 0) return [];
+  
+  const uniqueUsers = new Map();
+  likersArray.forEach(user => {
+    if (user && user.username && !uniqueUsers.has(user.username)) {
+      uniqueUsers.set(user.username, user);
+    }
+  });
+
+  return Array.from(uniqueUsers.values());
+}
+
 
 // --- Wire up events ---
 searchBtn.addEventListener('click', handleSearch);
@@ -260,5 +444,26 @@ reviewsContainer.addEventListener('click', (e) => {
 
     // Re-render the reviews with the new filter
     renderReviews(fullReviewsData, activeReviewFilter);
+  }
+});
+
+
+analyzeDataBtn.addEventListener('click', analyzeAudienceData);
+loadMoreOwnLikersBtn.addEventListener('click', () => {
+    visibleOwnLikersCount += LIKERS_PER_PAGE;
+    renderOwnPostLikers(userPostLikers, visibleOwnLikersCount);
+});
+loadMoreTaggedLikersBtn.addEventListener('click', () => {
+    visibleTaggedLikersCount += LIKERS_PER_PAGE;
+    renderTaggedPostLikers(taggedPostLikers, visibleTaggedLikersCount);
+});
+
+analysisLimitInput.addEventListener('change', () => {
+  const newLimit = parseInt(analysisLimitInput.value, 10);
+  if (newLimit > 0) {
+    analysisLimit = newLimit;
+    // Limiti değiştirdikten sonra listeyi yeniden render et
+    // (analyzeAudienceData'yı tekrar çağırmak en kolay yol)
+    analyzeAudienceData(); 
   }
 });

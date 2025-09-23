@@ -193,3 +193,110 @@ export function renderReviews(data, activeFilter = 'all') { // <-- MODIFIED sign
 
   container.innerHTML = reviewsHtml;
 }
+
+
+export function renderOwnPostLikers(likers, visibleCount) {
+  const container = document.getElementById('own-posts-likers-list');
+  const loadMoreBtn = document.getElementById('load-more-own-likers-btn');
+
+  const likersToRender = likers.slice(0, visibleCount);
+  container.innerHTML = ''; // Önceki listeyi temizle
+
+  likersToRender.forEach(user => {
+    const listItem = document.createElement('li');
+    listItem.className = 'liker-item'; // Yeni CSS class'ımız
+    // Resim etiketini kaldırdık
+    listItem.innerHTML = `
+      <strong class="username">@${user.username || 'Bilinmiyor'}</strong>
+      <span class="full-name">${user.full_name || ''}</span>
+    `;
+    container.appendChild(listItem);
+  });
+
+  // "Daha Fazla Yükle" butonunu yönet
+  if (likers.length > visibleCount) {
+    loadMoreBtn.style.display = 'block';
+  } else {
+    loadMoreBtn.style.display = 'none';
+  }
+}
+
+export function renderTaggedPostLikers(likers, visibleCount) {
+  const container = document.getElementById('tagged-posts-likers-list');
+  const loadMoreBtn = document.getElementById('load-more-tagged-likers-btn');
+
+  const likersToRender = likers.slice(0, visibleCount);
+  container.innerHTML = ''; // Önceki listeyi temizle
+
+  likersToRender.forEach(user => {
+    const listItem = document.createElement('li');
+    listItem.className = 'liker-item'; // Yeni CSS class'ımız
+    // Resim etiketini kaldırdık
+    listItem.innerHTML = `
+      <strong class="username">@${user.username || 'Bilinmiyor'}</strong>
+      <span class="full-name">${user.full_name || ''}</span>
+    `;
+    container.appendChild(listItem);
+  });
+
+  // "Daha Fazla Yükle" butonunu yönet
+  if (likers.length > visibleCount) {
+    loadMoreBtn.style.display = 'block';
+  } else {
+    loadMoreBtn.style.display = 'none';
+  }
+}
+
+
+// Add a placeholder for the analysis renderer too
+// renderAnalysis fonksiyonunu bu yeni versiyonla değiştirin
+export function renderAnalysis(topLikers, warmAudience, limit) {
+  const topLikersContainer = document.getElementById('top-likers-list');
+  const warmAudienceContainer = document.getElementById('warm-audience-list');
+  const analysisResultsContainer = document.getElementById('analysis-results-container');
+  
+  // --- DEĞİŞİKLİK BURADA: Veriyi render etmeden önce limitle ---
+  const limitedTopLikers = topLikers.slice(0, limit);
+  const limitedWarmAudience = warmAudience.slice(0, limit);
+
+  // Önceki sonuçları temizle
+  topLikersContainer.innerHTML = '';
+  warmAudienceContainer.innerHTML = '';
+  // CSS class'ını doğru şekilde ayarla
+  topLikersContainer.className = 'analysis-list-container';
+  warmAudienceContainer.className = 'analysis-list-container';
+  
+  // En Sadık Takipçileri render et
+  if (limitedTopLikers.length > 0) {
+    limitedTopLikers.forEach(user => {
+      const listItem = document.createElement('li');
+      listItem.className = 'analysis-card'; // Yeni CSS class'ımız
+      listItem.innerHTML = `
+        <strong class="username">@${user.username}</strong>
+        <span class="full-name">${user.full_name || ''}</span>
+        <span class="like-count">${user.likeCount} Beğeni</span>
+      `;
+      topLikersContainer.appendChild(listItem);
+    });
+  } else {
+    topLikersContainer.innerHTML = '<p>Analiz edilecek veri bulunamadı.</p>';
+  }
+
+  // İlgili Kitleyi render et
+  if (limitedWarmAudience.length > 0) {
+    limitedWarmAudience.forEach(user => {
+      const listItem = document.createElement('li');
+      listItem.className = 'analysis-card'; // Yeni CSS class'ımız
+      listItem.innerHTML = `
+        <strong class="username">@${user.username}</strong>
+        <span class="full-name">${user.full_name || ''}</span>
+      `;
+      warmAudienceContainer.appendChild(listItem);
+    });
+  } else {
+    warmAudienceContainer.innerHTML = '<p>Analiz edilecek veri bulunamadı.</p>';
+  }
+
+  // Kontrol ve export butonunu göster
+  document.getElementById('analysis-controls').style.display = 'flex';
+}

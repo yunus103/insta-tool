@@ -50,7 +50,7 @@ h1 {
 
 #theme-toggle {
   position: absolute;
-  top: 2rem;
+  top: 0.2rem;
   right: 1.5rem;
   background: transparent;
   border: 1px solid var(--border-color);
@@ -98,6 +98,22 @@ h1 {
   border-color: var(--primary-color);
 }
 
+.info-text-container {
+  text-align: center;
+  margin: -1rem 0 0.5rem 0; /* Keeps it positioned correctly */
+}
+
+.search-info-text {
+  display: inline-block; /* Makes the background hug the text */
+  padding: 0.5rem 1rem; /* Adds space around the text */
+  background-color: var(--surface-color); /* Uses your theme's color */
+  border: 1px solid var(--border-color); /* Adds a subtle border */
+  border-radius: 8px; /* Rounds the corners */
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
 button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
@@ -122,7 +138,7 @@ button:hover {
 
 #posts-container { 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsive grid */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid */
   gap: 1.5rem;
   align-items: stretch; /* Ensures cards stretch to fill height */
   margin-top: 1.5rem; /* Add some space above the grid */
@@ -343,7 +359,7 @@ button:hover {
   }
 
   #theme-toggle {
-    top: 1rem;
+    top: 0.1rem;
     right: 1rem;
     width: 40px;
     height: 40px;
@@ -551,4 +567,177 @@ button:hover {
   font-size: 0.9rem;
   color: var(--text-secondary);
   margin-top: 0.25rem;
+}
+
+.data-section {
+  margin-top: 2rem;
+}
+.data-section h3 {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.user-list-item .like-count {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Bu, hem beğenen listeleri hem de analiz listeleri için kullanılacak */
+.liker-grid-container {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  /* Cihaz genişliğine göre 2, 3 veya 4 sütun gösterir */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+/* Her bir kullanıcı kartının stili */
+.liker-item {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+.liker-item .username {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block; /* Tam adı alta almak için */
+  word-break: break-all; /* Çok uzun kullanıcı adlarının taşımasını engeller */
+}
+
+.liker-item .full-name {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
+
+/* Bu genel durum metni için bir stil */
+.data-status-text {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Analiz sonuçları için yeni grid yapısı */
+#analysis-results-container {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Her bir analiz kartının stili */
+.analysis-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analysis-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .analysis-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.1);
+}
+
+.analysis-card .username {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.1em;
+  word-break: break-all;
+}
+
+.analysis-card .full-name {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.analysis-card .like-count {
+  font-size: 1em;
+  font-weight: bold;
+  color: var(--primary-color);
+  background-color: rgba(0, 123, 255, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+}
+
+/* YENİ: Header'daki kontrol elemanları için */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap; /* Mobil'de sığmazsa alt satıra geçsin */
+}
+
+/* Limit kontrolü için stiller */
+.limit-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.limit-control label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap; /* Metnin bölünmesini engelle */
+}
+
+#analysis-limit-input {
+  width: 70px; /* Genişliği biraz azalttık */
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* Export butonu için yeni kontrol alanı */
+#analysis-controls {
+  display: none; /* JS ile gösterilecek */
+  margin-bottom: 2rem;
+  text-align: right; /* Butonu sağa hizala */
+}
+
+/* MOBİL UYUMLULUK İÇİN GÜNCELLENMİŞ MEDIA QUERY */
+@media (max-width: 768px) {
+  .analytics-header {
+    flex-direction: column; /* Header'ı dikey yap */
+    align-items: stretch; /* Elemanları tam genişliğe yay */
+    gap: 1rem;
+  }
+
+  .header-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .limit-control {
+    justify-content: space-between; /* Etiket ve input'u iki uca ayır */
+  }
+
+  #analysis-limit-input {
+    width: 100px; /* Mobil'de genişliği artır */
+  }
+
+  #analysis-controls {
+    text-align: center; /* Butonu ortala */
+  }
+  #export-analysis-btn {
+    width: 100%;
+  }
 }

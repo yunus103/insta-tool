@@ -2,7 +2,7 @@
 
 import { mockPostsResponse, mockSearchResponse } from './mock-data.js';
 
-const USE_MOCK_DATA = false;
+const USE_MOCK_DATA = true;
 
 // Search for locations by name
 export async function searchLocations(query) {
@@ -72,5 +72,23 @@ export async function getReviews(businessId, reviewCount) {
   if (!res.ok) {
     throw new Error('Could not fetch reviews for this place.');
   }
+  return await res.json();
+}
+
+export async function getUserPosts(username, cursor = '') {
+  const res = await fetch(`/api/get-user-posts?username=${username}&cursor=${cursor}`);
+  if (!res.ok) throw new Error('Failed to fetch user posts.');
+  return await res.json();
+}
+
+export async function getTaggedPosts(username, cursor = '') {
+  const res = await fetch(`/api/get-tagged-posts?username=${username}&cursor=${cursor}`);
+  if (!res.ok) throw new Error('Failed to fetch tagged posts.');
+  return await res.json();
+}
+
+export async function getPostLikers(postId) {
+  const res = await fetch(`/api/get-post-likers?postId=${postId}`);
+  if (!res.ok) throw new Error(`Failed to fetch likers for post ${postId}.`);
   return await res.json();
 }

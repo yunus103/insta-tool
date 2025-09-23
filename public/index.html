@@ -23,6 +23,11 @@
       <button id="search-btn">Ara</button>
     </section>
 
+    <div class="info-text-container">
+        <p class="search-info-text">💡- Konum sorgulamak için doğrudan konum adı giriniz: 'İstanbul' <br> 
+           💡- Hesap sorgulamak için başında '@' kullanıcı adı giriniz: '@kullaniciadi' </p>
+    </div>
+
     <section id="location-results">
       </section>
 
@@ -31,8 +36,12 @@
     <section id="tab-container" style="display: none;">
       <nav class="tab-nav">
         <button class="tab-btn active" data-tab="posts">Gönderiler</button>
-        <button class="tab-btn" data-tab="analytics">Analiz</button>
+        <button class="tab-btn" data-tab="analytics">Google Yorumlar</button>
+        <button class="tab-btn" data-tab="own-post-likers">Gönderi Beğenenleri</button>
+        <button class="tab-btn" data-tab="tagged-post-likers">Etiket Beğenenleri</button>
+        <button class="tab-btn" data-tab="potential-customers">Potansiyel Müşteriler</button>
       </nav>
+
 
       <div class="tab-content">
         <!-- Panel 1: Posts (Active by default) -->
@@ -54,7 +63,56 @@
                 </section>
         </div>
 
-        
+        <!-- YENİ PANEL 1: Kullanıcının Kendi Gönderilerini Beğenenler -->
+        <div id="own-post-likers" class="tab-panel">
+            <div class="analytics-header">
+                <h2>Kullanıcının Gönderilerini Beğenenler</h2>
+            </div>
+            <p id="own-likers-status" class="data-status-text">Analiz için bir @kullanıcıadı arayın.</p>
+            <ul id="own-posts-likers-list" class="liker-grid-container"></ul>
+            <button id="load-more-own-likers-btn" class="load-more-secondary-btn" style="display:none;">Daha Fazla Yükle</button>
+        </div>
+
+        <!-- YENİ PANEL 2: Etiketlendiği Gönderileri Beğenenler -->
+        <div id="tagged-post-likers" class="tab-panel">
+            <div class="analytics-header">
+                <h2>Etiketlendiği Gönderileri Beğenenler</h2>
+            </div>
+            <p id="tagged-likers-status" class="data-status-text">Analiz için bir @kullanıcıadı arayın.</p>
+            <ul id="tagged-posts-likers-list" class="liker-grid-container"></ul>
+            <button id="load-more-tagged-likers-btn" class="load-more-secondary-btn" style="display:none;">Daha Fazla Yükle</button>
+        </div>
+
+        <div id="potential-customers" class="tab-panel">
+           <!-- Header: Başlık, Limit ve Analiz Butonu burada -->
+            <div class="analytics-header">
+                <h2>Potansiyel Müşteri Analizi</h2>
+                <div class="header-controls">
+                <div class="limit-control">
+                    <label for="analysis-limit-input">Kişi Sayısı:</label>
+                    <input type="number" id="analysis-limit-input" value="50" min="10" max="1000">
+                </div>
+                <button id="analyze-data-btn">Analiz Et</button>
+                </div>
+            </div>
+            
+            <!-- Export butonu için ayrı bir kontrol alanı (veri gelince görünecek) -->
+            <div id="analysis-controls" style="display:none;">
+                <button id="export-analysis-btn">Excel'e Aktar</button>
+            </div>
+
+            <div id="analysis-results-container">
+                <div class="data-section">
+                <h3>En Sadık Takipçiler (Beğeni Sayısına Göre)</h3>
+                <ul id="top-likers-list" class="user-list-container"></ul>
+                </div>
+                <div class="data-section">
+                <h3>İlgili Kitle (Etiketli Gönderi Beğenileri)</h3>
+                <ul id="warm-audience-list" class="user-list-container"></ul>
+                </div>
+            </div>
+            </div>
+                    
         
       </div>
     </section>
