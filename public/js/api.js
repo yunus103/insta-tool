@@ -2,7 +2,7 @@
 
 import { mockPostsResponse, mockSearchResponse } from './mock-data.js';
 
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 // Search for locations by name
 export async function searchLocations(query) {
@@ -59,8 +59,8 @@ export async function getPostsByLocation(locationId, paginationToken = '') {
 
 
 // MAPS REVIEWS FETCH
-export async function findPlace(name, lat, lng) {
-  const res = await fetch(`/api/find-place?name=${encodeURIComponent(name)}&lat=${lat}&lng=${lng}`);
+export async function findPlace(name) {
+  const res = await fetch(`/api/find-place?name=${encodeURIComponent(name)}`);
   if (!res.ok) {
     throw new Error('Could not find a matching place on Google Maps.');
   }

@@ -1,19 +1,39 @@
-/* public/css/style.css */
+/* ==========================================================================
+   1. TEMEL DEĞİŞKENLER VE SIFIRLAMA (VARIABLES & RESET)
+   ========================================================================== */
 
-/* --- CSS Variables for Theming --- */
 :root {
+  /* Açık Tema Renkleri */
   --bg-color: #f0f2f5;
-  --surface-color: #ffffff;
+  --sidebar-bg: #1c2536;
+  --content-bg: #ffffff;
   --primary-color: #007bff;
   --primary-hover-color: #0056b3;
   --text-primary: #1c1e21;
   --text-secondary: #65676b;
-  --border-color: #ddd;
-  --font-family: 'Poppins', sans-serif;
+  --text-on-dark: #e0e0e0;
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0, 0, 0, 0.05);
   --error-color: #e53935;
+
+  /* Font Ailesi */
+  --font-family: 'Inter', sans-serif;
+
+  /* Geçiş Süresi */
+  --transition-speed: 0.3s;
 }
 
-/* --- Global Styles & Resets --- */
+body.dark-theme {
+  /* Koyu Tema Renkleri */
+  --bg-color: #121212;
+  --sidebar-bg: #1c2536;
+  --content-bg: #1e1e1e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --border-color: #333333;
+  --shadow-color: rgba(0, 0, 0, 0.2);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -25,215 +45,132 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   line-height: 1.6;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
-body.dark-theme {
-  --bg-color: #121212;
-  --surface-color: #1e1e1e;
-  --text-primary: #e0e0e0;
-  --text-secondary: #aaaaaa;
-  --border-color: #333;
+/* ==========================================================================
+   2. ANA YERLEŞİM (APP LAYOUT)
+   ========================================================================== */
+
+.app-container {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
 }
 
-main {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  position: relative;
+/* ==========================================================================
+   3. KENAR ÇUBUĞU (SIDEBAR)
+   ========================================================================== */
+
+.sidebar {
+  background-color: var(--sidebar-bg);
+  color: var(--text-on-dark);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
-h1 {
+.sidebar-header h3 {
+  font-size: 1.5rem;
   text-align: center;
   margin-bottom: 2rem;
-  font-weight: 600;
 }
 
-#theme-toggle {
-  position: absolute;
-  top: 0.2rem;
-  right: 1.5rem;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  font-size: 1.5rem;
+.sidebar-nav {
+  list-style: none;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sidebar-nav .nav-item a {
+  display: flex;
   align-items: center;
-  padding: 0;
-  line-height: 0;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-on-dark);
+  font-weight: 500;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
-#theme-toggle:hover {
-  background: var(--surface-color);
-  border-color: var(--primary-color);
+.sidebar-nav .nav-item a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* --- Search Bar --- */
-#search-bar {
+.sidebar-nav .nav-item.active a {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/* ==========================================================================
+   4. ANA İÇERİK ALANI (MAIN CONTENT)
+   ========================================================================== */
+
+.main-content {
+  background-color: var(--content-bg);
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.app-header {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  background-color: var(--content-bg);
+  padding-bottom: 1.5rem;
+  z-index: 10;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.search-container {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
 }
 
 #search-input {
   flex-grow: 1;
   padding: 0.75rem 1rem;
-  font-size: 1rem;
   border: 1px solid var(--border-color);
-  background-color: var(--surface-color);
+  background-color: var(--bg-color);
   color: var(--text-primary);
-  border-radius: 8px;
+  border-radius: 8px 0 0 8px;
   outline: none;
-  transition: border-color 0.3s ease;
-}
-
-#search-input::placeholder {
-  color: var(--text-secondary);
-}
-
-#search-input:focus {
-  border-color: var(--primary-color);
-}
-
-.info-text-container {
-  text-align: center;
-  margin: -1rem 0 0.5rem 0; /* Keeps it positioned correctly */
-}
-
-.search-info-text {
-  display: inline-block; /* Makes the background hug the text */
-  padding: 0.5rem 1rem; /* Adds space around the text */
-  background-color: var(--surface-color); /* Uses your theme's color */
-  border: 1px solid var(--border-color); /* Adds a subtle border */
-  border-radius: 8px; /* Rounds the corners */
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  text-align: left;
-}
-
-button {
-  padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
+}
+
+#search-btn {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--primary-color);
   background-color: var(--primary-color);
   color: white;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: var(--primary-hover-color);
-}
-
-/* --- Results Containers (Locations & Posts) --- */
-#location-results {
-  display: grid;
-  gap: 1.5rem;
-}
-
-#posts-container { 
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid */
-  gap: 1.5rem;
-  align-items: stretch; /* Ensures cards stretch to fill height */
-  margin-top: 1.5rem; /* Add some space above the grid */
-}
-
-
-/* --- Card Styling (for both locations and posts) --- */
-.location-item,
-.post-item {
-  background-color: var(--surface-color);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  display: flex; /* MODIFIED: Use flexbox for inner content alignment */
-  flex-direction: column; /* Stack content vertically */
-  justify-content: space-between; /* Push link to bottom if space allows */
-}
-
-.post-item {
-    overflow-wrap: break-word; /* yeni nesil */
-    word-break: break-word;   
-}
-
-.post-item p,
-.post-item span,
-.post-item a {
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.post-item > img {
-  width: 60px;          /* Sets a fixed width */
-  height: 60px;         /* Sets a fixed height */
-  border-radius: 50%;   /* This is the key to making it a circle */
-  object-fit: cover;    /* Prevents the image from being stretched or squished */
-  margin-bottom: 1rem;  /* Adds space between the picture and the username below it */
-  border: 2px solid var(--border-color); /* Optional: Adds a subtle border */
-}
-
-.location-item {
+  border-radius: 0 8px 8px 0;
   cursor: pointer;
 }
 
-.location-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 123, 255, 0.1);
-}
+/* ==========================================================================
+   5. SAYFALAR VE İÇ SEKMELER (PAGES & TABS)
+   ========================================================================== */
 
-
-/* --- Post Item Specifics --- */
-.post-item { /* MODIFIED */
-  text-align: left;
-  height: 100%; /* Important for equal height in grid */
+.page {
+  display: none;
 }
-.post-item p {
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-}
-
-.post-item p:last-of-type { /* Adjust spacing for the last paragraph before the link */
-    margin-bottom: 1.2rem;
-}
-
-.post-item strong {
-  color: var(--primary-color);
-}
-
-.post-item small { /* Style for post date */
-    color: var(--text-secondary);
-    font-size: 0.8em;
-}
-
-.post-item em {
-  color: var(--text-secondary);
-  font-size: 0.9em;
-}
-
-.post-item a {
-  display: inline-block;
-  margin-top: 0.5rem;
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s;
-}
-
-.post-item a:hover {
-  color: var(--primary-hover-color);
-  text-decoration: underline;
-}
-
-#tab-container {
-  width: 100%;
-  margin-top: 2rem;
+.page.active-page {
+  display: block;
 }
 
 .tab-nav {
@@ -250,14 +187,8 @@ button:hover {
   background-color: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.3s, border-bottom-color 0.3s;
   border-bottom: 3px solid transparent;
-  margin-bottom: -2px; /* Aligns the bottom border with the nav's border */
-}
-
-.tab-btn:hover {
-  color: var(--text-primary);
-  background-color: transparent; /* Override generic button hover */
+  margin-bottom: -2px;
 }
 
 .tab-btn.active {
@@ -265,289 +196,166 @@ button:hover {
   border-bottom-color: var(--primary-color);
 }
 
-/* Logic for hiding/showing tab panels */
 .tab-panel {
   display: none;
 }
-
 .tab-panel.active {
   display: block;
 }
 
-/* Placeholder styles for future content */
-.tab-panel h2 {
-    margin-bottom: 1rem;
-    color: var(--text-secondary);
-}
-/* --- END OF NEW SECTION --- */
+/* ==========================================================================
+   6. BİLEŞEN KÜTÜPHANESİ (COMPONENT LIBRARY)
+   ========================================================================== */
 
-/* --- Responsive adjustments for grid --- */
-@media (max-width: 768px) {
-  #posts-container {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Adjust for smaller screens */
-  }
-}
-
-@media (max-width: 480px) {
-  #posts-container {
-    grid-template-columns: 1fr; /* Single column on very small screens */
-  }
-  .post-item img {
-      max-height: 180px;
-  }
-}
-
-/* --- Load More Button --- */
-#load-more-btn {
-  display: none; /* JS will change this to 'block' */
-  width: 50%;
-  margin: 2rem auto;
-  background-color: transparent;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-}
-
-#load-more-btn:hover {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-/* --- Toast Notifications --- */
-#toast-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-}
-
-.toast {
-  padding: 1rem 1.5rem;
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  color: white;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s, transform 0.5s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.toast.error {
-  background-color: var(--error-color);
-}
-
-/* --- Responsive Design --- */
-@media (max-width: 600px) {
-  main {
-    margin: 1rem auto;
-  }
-  
-  h1 {
-    font-size: 1.5rem;
-  }
-
-  #search-bar {
-    flex-direction: column;
-  }
-  
-  #load-more-btn {
-    width: 100%;
-  }
-
-  #theme-toggle {
-    top: 0.1rem;
-    right: 1rem;
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-  }
-}
-
-/* --- Loader / Spinner --- */
-.loader-overlay {
-  position: fixed; /* Sit on top of the page content */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(18, 18, 18, 0.7); /* Dark semi-transparent background */
-  display: none; /* Hidden by default */
-  justify-content: center;
-  align-items: center;
-  z-index: 2000; /* Make sure it's on top of everything */
-  backdrop-filter: blur(2px); /* Optional: nice blur effect */
-}
-
-.loader-overlay.show {
-  display: flex; /* Use this class to show the loader */
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid var(--border-color);
-  border-top-color: var(--primary-color); /* Color the spinning part */
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* --- Scroll to Top Button --- */
-#scrollToTopBtn {
-  position: fixed; /* Keep it in place during scroll */
-  bottom: 20px;
-  right: 20px;
-  z-index: 100; /* Sit on top of most content */
-  border: none;
-  background-color: var(--primary-color);
-  color: white;
-  cursor: pointer;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%; /* Make it circular */
-  font-size: 24px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-
-  /* Animation properties */
-  opacity: 0; /* Hidden by default */
-  visibility: hidden;
-  transform: translateY(15px);
-  transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
-}
-
-#scrollToTopBtn.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-#scrollToTopBtn:hover {
-  background-color: var(--primary-hover-color);
-}
-
-/* --- Analytics & Review Styling --- */
-.analytics-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-#reviews-container {
+/* --- Arama Sonuçları --- */
+#location-results-container, #business-search-results {
   display: grid;
   gap: 1rem;
+  margin-bottom: 2rem;
 }
-
-.review-item {
-  background-color: var(--surface-color);
+.location-item { /* Hem insta lokasyon hem de harita işletme sonuçları için */
+  background-color: var(--content-bg);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  overflow-wrap: break-word; /* uzun kelimeleri kır */
-  word-break: break-word;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.location-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px var(--shadow-color);
+}
+.location-item strong {
+  color: var(--text-primary);
+}
+.location-item small {
   color: var(--text-secondary);
 }
 
-.review-header strong {
-  color: var(--text-primary);
-  font-size: 1.1em;
-}
-
-.review-rating {
-  font-weight: 600;
-  color: var(--primary-color);
-  font-size: 1.1em;
-}
-
-.review-text {
-  line-height: 1.5;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.review-item a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  margin-top: 0.5rem;
-}
-
-.review-text,
-.review-item a {
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.review-item a:hover {
-  text-decoration: underline;
-}
-
-
-#review-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+/* --- Alt Başlık (Arama Sonuçları İçin) --- */
+.search-results-header {
   margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
+}
+
+.search-results-subheader {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border-color);
 }
 
-.filter-btn {
-  padding: 0.5rem 1rem;
+/* --- Kart Stilleri --- */
+#posts-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+.post-card {
+  background-color: var(--content-bg);
   border: 1px solid var(--border-color);
-  background-color: transparent;
-  color: var(--text-secondary);
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+.post-card-header .profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.post-card-header .username { font-weight: 600; }
+.post-card-image {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
 }
 
-.filter-btn:hover {
-  border-color: var(--primary-color);
+.post-card-body { 
+    padding: 1rem; 
+    flex-grow: 1;
+}
+.post-card-caption { margin-bottom: 1rem; }
+.post-card-stats { 
+    display: flex; 
+    gap: 1rem; 
+    color: var(--text-secondary); 
+    font-size: 0.9em; 
+    margin-top: auto; /* İstatistikleri kartın altına iter */
+}
+
+/* YENİ: Gönderi kartının en alt bölümü için stil */
+.post-card-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    text-align: center;
+}
+
+.post-card-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.post-card-footer a:hover {
+    text-decoration: underline;
+}
+
+.liker-grid-container {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+.liker-item {
+  background-color: var(--content-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+.liker-item .username { font-weight: 600; display: block; word-break: break-all; }
+.liker-item .full-name { font-size: 0.85em; color: var(--text-secondary); }
+
+.analysis-card {
+  background-color: var(--content-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+.analysis-card .username { font-weight: 600; font-size: 1.1em; }
+.analysis-card .full-name { color: var(--text-secondary); margin-bottom: 1rem; }
+.analysis-card .like-count {
+  font-weight: bold;
   color: var(--primary-color);
-}
-
-.filter-btn.active {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  color: white;
-}
-
-#business-summary {
-  margin-bottom: 1.5rem;
+  background-color: rgba(0, 123, 255, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
 }
 
 .summary-card {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  background-color: var(--surface-color);
+  background-color: var(--bg-color);
   padding: 1.5rem;
   border-radius: 12px;
   border: 1px solid var(--border-color);
+  margin-bottom: 1rem;
 }
 
 .summary-item {
@@ -569,175 +377,180 @@ button:hover {
   margin-top: 0.25rem;
 }
 
-.data-section {
-  margin-top: 2rem;
-}
-.data-section h3 {
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
+#reviews-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
 }
 
-.user-list-item .like-count {
-  margin-left: auto;
-  font-weight: 600;
-  color: var(--primary-color);
+#review-filters {
+  grid-column: 1 / -1; /* tüm sütunları kapla */
 }
 
-/* Bu, hem beğenen listeleri hem de analiz listeleri için kullanılacak */
-.liker-grid-container {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  /* Cihaz genişliğine göre 2, 3 veya 4 sütun gösterir */
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
-}
-
-/* Her bir kullanıcı kartının stili */
-.liker-item {
-  background-color: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  text-align: center;
-}
-
-.liker-item .username {
-  font-weight: 600;
-  color: var(--text-primary);
-  display: block; /* Tam adı alta almak için */
-  word-break: break-all; /* Çok uzun kullanıcı adlarının taşımasını engeller */
-}
-
-.liker-item .full-name {
-  font-size: 0.85em;
-  color: var(--text-secondary);
-}
-
-/* Bu genel durum metni için bir stil */
-.data-status-text {
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-/* Analiz sonuçları için yeni grid yapısı */
-#analysis-results-container {
-  display: grid;
-  gap: 1.5rem;
-}
-
-/* Her bir analiz kartının stili */
-.analysis-card {
-  background-color: var(--surface-color);
+.review-card {
+  background-color: var(--content-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.review-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.review-card-author strong { font-size: 1.1em; }
+.review-card-author small { color: var(--text-secondary); display: block; }
+.review-card-rating { font-size: 1.2em; font-weight: bold; color: var(--primary-color); }
 
-.analysis-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-
-.dark-theme .analysis-card:hover {
-  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.1);
-}
-
-.analysis-card .username {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 1.1em;
-  word-break: break-all;
-}
-
-.analysis-card .full-name {
-  font-size: 0.9em;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
-}
-
-.analysis-card .like-count {
-  font-size: 1em;
-  font-weight: bold;
-  color: var(--primary-color);
-  background-color: rgba(0, 123, 255, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-}
-
-/* YENİ: Header'daki kontrol elemanları için */
-.header-controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap; /* Mobil'de sığmazsa alt satıra geçsin */
-}
-
-/* Limit kontrolü için stiller */
-.limit-control {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.limit-control label {
-  font-weight: 500;
-  color: var(--text-secondary);
-  white-space: nowrap; /* Metnin bölünmesini engelle */
-}
-
-#analysis-limit-input {
-  width: 70px; /* Genişliği biraz azalttık */
-  padding: 0.5rem;
-  border-radius: 8px;
+/* --- Butonlar --- */
+#theme-toggle {
+  background: transparent;
   border: 1px solid var(--border-color);
-  background-color: var(--bg-color);
   color: var(--text-primary);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.load-more-btn, .load-more-secondary-btn {
+  display: block;
+  width: 50%;
+  margin: 2rem auto;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  text-align: center;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+.load-more-btn:hover, .load-more-secondary-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
 }
 
-/* Export butonu için yeni kontrol alanı */
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.filter-btn.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* --- Kontrol Panelleri --- */
 #analysis-controls {
-  display: none; /* JS ile gösterilecek */
+  display: none;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
   margin-bottom: 2rem;
-  text-align: right; /* Butonu sağa hizala */
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-color);
+  border-radius: 12px;
+}
+.limit-control { display: flex; align-items: center; gap: 0.75rem; }
+.limit-control label { font-weight: 500; color: var(--text-secondary); }
+#analysis-limit-input {
+  width: 80px; padding: 0.5rem; border-radius: 8px;
+  border: 1px solid var(--border-color); background-color: var(--content-bg);
+  color: var(--text-primary); font-size: 1rem; text-align: center;
 }
 
-/* MOBİL UYUMLULUK İÇİN GÜNCELLENMİŞ MEDIA QUERY */
+/* ==========================================================================
+   7. GLOBAL YARDIMCILAR (GLOBAL UTILITIES)
+   ========================================================================== */
+
+/* --- Yüklenme Animasyonu --- */
+.loader-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(18, 18, 18, 0.7);
+  display: none; justify-content: center; align-items: center;
+  z-index: 2000; backdrop-filter: blur(2px);
+}
+.loader-overlay.show { display: flex; }
+.spinner {
+  width: 50px; height: 50px; border: 5px solid var(--border-color);
+  border-top-color: var(--primary-color); border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- Bildirimler (Toast) --- */
+#toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+.toast {
+  padding: 1rem 1.5rem; margin-bottom: 0.5rem; border-radius: 8px;
+  color: white; opacity: 0; transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { background-color: var(--error-color); }
+
+/* --- Yukarı Çık Butonu --- */
+#scrollToTopBtn {
+  position: fixed; bottom: 20px; right: 20px; z-index: 100;
+  border: none; background-color: var(--primary-color); color: white;
+  cursor: pointer; width: 50px; height: 50px; border-radius: 50%;
+  font-size: 24px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  opacity: 0; visibility: hidden; transform: translateY(15px);
+  transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+}
+#scrollToTopBtn.show { opacity: 1; visibility: visible; transform: translateY(0); }
+#scrollToTopBtn:hover { background-color: var(--primary-hover-color); }
+
+/* ==========================================================================
+   8. HAMBURGER MENÜ (SIDEBAR TOGGLE)
+   ========================================================================== */
+
+.sidebar-toggle {
+    display: none; /* Varsayılan olarak masaüstünde gizli */
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: 0.5rem;
+    border-radius: 8px;
+}
+
+.sidebar-toggle svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* ==========================================================================
+   9. MOBİL UYUMLULUK (RESPONSIVE DESIGN)
+   ========================================================================== */
+
 @media (max-width: 768px) {
-  .analytics-header {
-    flex-direction: column; /* Header'ı dikey yap */
-    align-items: stretch; /* Elemanları tam genişliğe yay */
-    gap: 1rem;
+  .app-container { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed; transform: translateX(-100%); z-index: 1000;
+    transition: transform 0.3s ease;
   }
-
-  .header-controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .limit-control {
-    justify-content: space-between; /* Etiket ve input'u iki uca ayır */
-  }
-
-  #analysis-limit-input {
-    width: 100px; /* Mobil'de genişliği artır */
-  }
-
-  #analysis-controls {
-    text-align: center; /* Butonu ortala */
-  }
-  #export-analysis-btn {
-    width: 100%;
-  }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { padding: 1.5rem; }
+  .app-header { flex-wrap: wrap; gap: 1rem; }
+  .search-container { order: 3; width: 100%; max-width: none; }
+  
+  #analysis-controls { flex-direction: column; align-items: stretch; }
+  .limit-control { justify-content: space-between; }
+  #export-analysis-btn { width: 100%; }
+  /* Kenar çubuğu gizlendiğinde hamburger butonunu göster */
+    .sidebar-toggle {
+        display: flex; /* flex, svg'yi ortalamak için ideal */
+        align-items: center;
+        justify-content: center;
+        z-index: 1100; /* Sidebar'ın önünde kalması için */
+    }
 }
+

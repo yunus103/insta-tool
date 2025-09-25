@@ -1,302 +1,321 @@
-// public/js/ui.js
+/**
+ * @file Bu dosya, uygulamanın tüm DOM manipülasyonu ve arayüz render
+ * işlemlerinden sorumlu fonksiyonları içerir.
+ */
+
+// =================================================================================
+// --- GENEL UI YARDIMCILARI ---
+// =================================================================================
 
 /**
- * Renders the list of found locations.
- * @param {Array} locations - Array of location objects.
- * @param {Function} onLocationClick - Callback for when a location is clicked.
+ * Sayfanın ana başlığını dinamik olarak günceller.
+ * @param {string} title - Gösterilecek yeni başlık.
  */
-export function renderLocationResults(locations, onLocationClick) {
-  const container = document.getElementById('location-results');
-  container.innerHTML = ''; // Clear previous results
-
-  if (!locations || locations.length === 0) {
-    // A toast is better than text in the container for "not found"
-    // The app.js logic already handles showing this toast
-    return;
-  }
-
-  locations.forEach(loc => {
-    const div = document.createElement('div');
-    div.className = 'location-item';
-    div.innerHTML = `
-      <strong>${loc.name}</strong><br>
-      <small>${loc.address || loc.city || 'No address available'}</small>
-    `;
-    div.addEventListener('click', () => onLocationClick(loc));
-    container.appendChild(div);
-  });
+export function updatePageTitle(title) {
+    const pageTitleEl = document.getElementById('page-title');
+    if (pageTitleEl) {
+        pageTitleEl.textContent = title;
+    }
 }
 
 /**
- * Renders posts into the container.
- * @param {Array} posts - Array of post objects from the API.
- * @param {boolean} append - If true, appends posts; otherwise, overwrites.
+ * Sayfa başlığını (sidebar'dan gelen) değil, sayfa içindeki arama sonuçları
+ * için kullanılan alt başlığı günceller.
+ * @param {HTMLElement} pageElement - Başlığın gösterileceği sayfa elementi.
+ * @param {string} text - Gösterilecek metin.
  */
-export function renderPosts(posts, append = false) {
-  const container = document.getElementById('posts-container');
-  if (!append) {
-    container.innerHTML = '';
-  }
-
-  posts.forEach(post => {
-    const captionText = post.caption?.text || 'No caption available.';
-    
-    // Fallback logic for user data
-    const user = post.owner || post.user || {};
-    const username = user.username || 'Bilinmeyen Kullanıcı';
-    const fullName = user.full_name || '';
-    const isVerified = user.is_verified ? '✔️' : '';
-
-    const createdAtUnix = post.caption?.created_at || post.taken_at;
-    const createdAt = createdAtUnix
-      ? new Date(createdAtUnix * 1000).toLocaleString()
-      : 'Belirsiz Tarih';
-
-    const likeCount = post.like_count ?? 0;
-    const commentCount = post.comment_count ?? 0;
-    const taggedUsers = post.caption?.mentions?.length > 0
-      ? post.caption.mentions.join(', ')
-      : 'Yok';
-    
-    const postUrl = post.code
-      ? `https://www.instagram.com/p/${post.code}/`
-      : "#";
-
-    const profilePic = post.user.profile_pic_url;
-    
-    const div = document.createElement('div');
-    div.className = 'post-item';
-    div.innerHTML = `
-      <img src="${profilePic}">
-      <p>
-        <strong>@${username}</strong> ${isVerified}
-        ${fullName ? `(${fullName})` : ''} — <small>${createdAt}</small>
-      </p>
-      <p>${captionText}</p>
-      <p>❤️ ${likeCount} | 💬 ${commentCount}</p>
-      <p><em>Etiketli Kullanıcılar: ${taggedUsers}</em></p>
-      <a href="${postUrl}" target="_blank" rel="noopener noreferrer">Instagram'da Görüntüle</a>
-    `;
-    container.appendChild(div);
-  });
-}
-
-
-/**
- * Render metrics (totals/averages)
- * @param {Object} metrics - { totalLikes, avgLikes, totalComments, avgComments }
- */
-export function renderMetrics(metrics) {
-  const container = document.getElementById('metrics-container');
-  container.innerHTML = `
-    <p>Total Likes: ${metrics.totalLikes}</p>
-    <p>Average Likes: ${metrics.avgLikes.toFixed(2)}</p>
-    <p>Total Comments: ${metrics.totalComments}</p>
-    <p>Average Comments: ${metrics.avgComments.toFixed(2)}</p>
-  `;
+export function renderSubheader(pageElement, text) {
+    const headerContainer = pageElement.querySelector('.search-results-header');
+    if (headerContainer) {
+        headerContainer.innerHTML = text ? `<h2 class="search-results-subheader">${text}</h2>` : '';
+    }
 }
 
 /**
- * Show a toast message (temporary popup)
- * @param {string} message
- * @param {string} type - 'error' | 'success' | 'info'
- */
-/**
- * Creates and displays a toast notification.
- * @param {string} message - The message to display.
- * @param {string} type - 'error' or 'success'.
+ * Ekranda bir bildirim mesajı (toast) gösterir.
+ * @param {string} message - Gösterilecek mesaj.
+ * @param {string} type - 'error' veya 'success' gibi bir bildirim türü.
  */
 export function showToast(message, type = 'error') {
-  const container = document.getElementById('toast-container');
-  
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  
-  container.appendChild(toast);
-  
-  // Trigger the animation
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 100); // Small delay to allow element to be added to DOM
-
-  // Hide and remove the toast after 3 seconds
-  setTimeout(() => {
-    toast.classList.remove('show');
-    // Remove the element after the fade-out animation completes
-    toast.addEventListener('transitionend', () => toast.remove());
-  }, 3000);
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.addEventListener('transitionend', () => toast.remove());
+    }, 3000);
 }
 
-
-/** Shows the loading spinner overlay. */
+/** Yüklenme animasyonunu gösterir. */
 export function showLoader() {
-  document.getElementById('loader').classList.add('show');
+    document.getElementById('loader').classList.add('show');
 }
 
-/** Hides the loading spinner overlay. */
+/** Yüklenme animasyonunu gizler. */
 export function hideLoader() {
-  document.getElementById('loader').classList.remove('show');
+    document.getElementById('loader').classList.remove('show');
 }
 
-export function renderReviews(data, activeFilter = 'all') { // <-- MODIFIED signature
-  const container = document.getElementById('reviews-container');
-  
-  if (!data) {
-    container.innerHTML = '<p>Click "Analyze Location" to begin.</p>';
-    return;
-  }
-  
-  const reviews = data.reviews || (data.data && data.data.reviews) || [];
-  const name = data.name || (data.data && data.data.name) || 'Reviews';
-  const rating = data.rating || (data.data && data.data.rating);
 
-  // --- FILTERING LOGIC ---
-  const filteredReviews = activeFilter === 'all'
-    ? reviews
-    : reviews.filter(review => review.rating == activeFilter);
+// =================================================================================
+// --- "KONUM GÖNDERİLERİ" SAYFASI İÇİN RENDER FONKSİYONLARI ---
+// =================================================================================
 
-  let reviewsHtml = `<h3>${name}${rating ? ` (${rating} ★)` : ''}</h3>`;
-
-  // --- DYNAMICALLY CREATE FILTER BUTTONS ---
-  reviewsHtml += `<div id="review-filters">
-    <button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-rating="all">All</button>
-    <button class="filter-btn ${activeFilter === '5' ? 'active' : ''}" data-rating="5">5 ★</button>
-    <button class="filter-btn ${activeFilter === '4' ? 'active' : ''}" data-rating="4">4 ★</button>
-    <button class="filter-btn ${activeFilter === '3' ? 'active' : ''}" data-rating="3">3 ★</button>
-    <button class="filter-btn ${activeFilter === '2' ? 'active' : ''}" data-rating="2">2 ★</button>
-    <button class="filter-btn ${activeFilter === '1' ? 'active' : ''}" data-rating="1">1 ★</button>
-  </div>`;
-  
-  if (filteredReviews.length === 0) {
-    reviewsHtml += '<h3>No reviews found for this rating.</h3>';
-  } else {
-    // --- RENDER FILTERED REVIEWS ---
-    filteredReviews.forEach(review => {
-      const reviewDate = new Date(review.review_datetime_utc).toLocaleDateString(undefined, {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
-
-      reviewsHtml += `
-        <div class="review-item">
-          <div class="review-header">
-            <strong>${review.author_name}</strong>
-            <small>${reviewDate}</small>
-          </div>
-          <div class="review-rating">${review.rating} ★</div>
-          <p class="review-text">${review.review_text}</p>
-          <a href="${review.review_link}" target="_blank" rel="noopener noreferrer">View on Maps</a>
-        </div>
-      `;
+/**
+ * Instagram lokasyon arama sonuçlarını listeler.
+ * @param {HTMLElement} container - Sonuçların render edileceği HTML elementi.
+ * @param {Array} locations - API'den gelen lokasyon nesneleri dizisi.
+ * @param {Function} onLocationClick - Bir lokasyona tıklandığında çalışacak callback fonksiyonu.
+ */
+export function renderLocationResults(container, locations, onLocationClick) {
+    container.innerHTML = '';
+    locations.forEach(loc => {
+        const div = document.createElement('div');
+        div.className = 'location-item';
+        div.innerHTML = `
+            <strong>${loc.name}</strong><br>
+            <small>${loc.address || loc.city || 'Adres bilgisi yok'}</small>
+        `;
+        div.addEventListener('click', () => onLocationClick(loc));
+        container.appendChild(div);
     });
-  }
+}
 
-  container.innerHTML = reviewsHtml;
+/**
+ * Belirtilen bir lokasyona ait Instagram gönderilerini render eder.
+ * @param {HTMLElement} container - Gönderilerin render edileceği grid konteyneri.
+ * @param {Array} posts - API'den gelen gönderi nesneleri dizisi.
+ * @param {boolean} append - Yeni gönderilerin mevcutların üzerine mi ekleneceğini belirtir.
+ */
+export function renderPosts(container, posts, append = false) {
+    if (!append) {
+        container.innerHTML = '';
+    }
+
+    posts.forEach(post => {
+        const user = post.owner || post.user || {};
+        const username = user.username || 'Bilinmiyor';
+        const fullName = user.full_name || ''; // full_name geri eklendi
+        const isVerified = user.is_verified ? '✔️' : '';
+        const profilePicUrl = user.profile_pic_url;
+        const imageUrl = post.image_versions?.length > 0 ? post.image_versions[0].url : null;
+        const captionText = post.caption?.text || '';
+        const likeCount = post.like_count ?? 0;
+        const commentCount = post.comment_count ?? 0;
+        const postUrl = post.code ? `https://www.instagram.com/p/${post.code}/` : "#"; // postUrl geri eklendi
+        const createdAt = post.taken_at ? new Date(post.taken_at * 1000).toLocaleDateString() : '';
+
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        card.innerHTML = `
+            <div class="post-card-header">
+                <img src="${profilePicUrl}" class="profile-pic" alt="${username}" referrerpolicy="no-referrer">
+                <div class="username-group">
+                    <strong class="username">@${username}${isVerified}</strong>
+                    <div class="full-name">${fullName}</div>
+                </div>
+            </div>
+            ${imageUrl ? `<img src="${imageUrl}" class="post-image" alt="Gönderi resmi">` : ''}
+            <div class="post-card-body">
+                <p class="post-card-caption">${captionText}</p>
+                <div class="post-card-stats">
+                    <span>❤️ ${likeCount}</span>
+                    <span>💬 ${commentCount}</span>
+                    <small>${createdAt}</small>
+                </div>
+            </div>
+            <div class="post-card-footer">
+                <a href="${postUrl}" target="_blank" rel="noopener noreferrer">Instagram'da Görüntüle</a>
+            </div>
+        `;
+        container.appendChild(card);
+    });
 }
 
 
+
+// =================================================================================
+// --- "KULLANICI ANALİZİ" SAYFASI İÇİN RENDER FONKSİYONLARI ---
+// =================================================================================
+
+/**
+ * Kullanıcının kendi gönderilerini beğenenlerin listesini render eder.
+ * @param {Array} likers - Beğenen kullanıcı nesneleri dizisi.
+ * @param {number} visibleCount - Gösterilecek maksimum kullanıcı sayısı.
+ */
 export function renderOwnPostLikers(likers, visibleCount) {
-  const container = document.getElementById('own-posts-likers-list');
-  const loadMoreBtn = document.getElementById('load-more-own-likers-btn');
+    const container = document.querySelector('#user-analysis-page #own-posts-likers-list');
+    const loadMoreBtn = document.querySelector('#user-analysis-page #load-more-own-likers-btn');
+    
+    const likersToRender = likers.slice(0, visibleCount);
+    container.innerHTML = '';
 
-  const likersToRender = likers.slice(0, visibleCount);
-  container.innerHTML = ''; // Önceki listeyi temizle
+    likersToRender.forEach(user => {
+        const item = document.createElement('li');
+        item.className = 'liker-item';
+        item.innerHTML = `
+            <strong class="username">@${user.username || 'Bilinmiyor'}</strong>
+            <span class="full-name">${user.full_name || ''}</span>
+        `;
+        container.appendChild(item);
+    });
 
-  likersToRender.forEach(user => {
-    const listItem = document.createElement('li');
-    listItem.className = 'liker-item'; // Yeni CSS class'ımız
-    // Resim etiketini kaldırdık
-    listItem.innerHTML = `
-      <strong class="username">@${user.username || 'Bilinmiyor'}</strong>
-      <span class="full-name">${user.full_name || ''}</span>
-    `;
-    container.appendChild(listItem);
-  });
-
-  // "Daha Fazla Yükle" butonunu yönet
-  if (likers.length > visibleCount) {
-    loadMoreBtn.style.display = 'block';
-  } else {
-    loadMoreBtn.style.display = 'none';
-  }
+    loadMoreBtn.style.display = likers.length > visibleCount ? 'block' : 'none';
 }
 
+/**
+ * Kullanıcının etiketlendiği gönderileri beğenenlerin listesini render eder.
+ * @param {Array} likers - Beğenen kullanıcı nesneleri dizisi.
+ * @param {number} visibleCount - Gösterilecek maksimum kullanıcı sayısı.
+ */
 export function renderTaggedPostLikers(likers, visibleCount) {
-  const container = document.getElementById('tagged-posts-likers-list');
-  const loadMoreBtn = document.getElementById('load-more-tagged-likers-btn');
+    const container = document.querySelector('#user-analysis-page #tagged-posts-likers-list');
+    const loadMoreBtn = document.querySelector('#user-analysis-page #load-more-tagged-likers-btn');
 
-  const likersToRender = likers.slice(0, visibleCount);
-  container.innerHTML = ''; // Önceki listeyi temizle
+    const likersToRender = likers.slice(0, visibleCount);
+    container.innerHTML = '';
+    
+    likersToRender.forEach(user => {
+        const item = document.createElement('li');
+        item.className = 'liker-item';
+        item.innerHTML = `
+            <strong class="username">@${user.username || 'Bilinmiyor'}</strong>
+            <span class="full-name">${user.full_name || ''}</span>
+        `;
+        container.appendChild(item);
+    });
 
-  likersToRender.forEach(user => {
-    const listItem = document.createElement('li');
-    listItem.className = 'liker-item'; // Yeni CSS class'ımız
-    // Resim etiketini kaldırdık
-    listItem.innerHTML = `
-      <strong class="username">@${user.username || 'Bilinmiyor'}</strong>
-      <span class="full-name">${user.full_name || ''}</span>
-    `;
-    container.appendChild(listItem);
-  });
-
-  // "Daha Fazla Yükle" butonunu yönet
-  if (likers.length > visibleCount) {
-    loadMoreBtn.style.display = 'block';
-  } else {
-    loadMoreBtn.style.display = 'none';
-  }
+    loadMoreBtn.style.display = likers.length > visibleCount ? 'block' : 'none';
 }
 
-
-// Add a placeholder for the analysis renderer too
-// renderAnalysis fonksiyonunu bu yeni versiyonla değiştirin
+/**
+ * Analiz edilmiş "Potansiyel Müşteri" verisini (En Sadık Takipçiler ve İlgili Kitle) render eder.
+ * @param {Array} topLikers - Sıralanmış en sadık takipçiler dizisi.
+ * @param {Array} warmAudience - Benzersiz ilgili kitle dizisi.
+ * @param {number} limit - Gösterilecek maksimum kullanıcı sayısı.
+ */
 export function renderAnalysis(topLikers, warmAudience, limit) {
-  const topLikersContainer = document.getElementById('top-likers-list');
-  const warmAudienceContainer = document.getElementById('warm-audience-list');
-  const analysisResultsContainer = document.getElementById('analysis-results-container');
-  
-  // --- DEĞİŞİKLİK BURADA: Veriyi render etmeden önce limitle ---
-  const limitedTopLikers = topLikers.slice(0, limit);
-  const limitedWarmAudience = warmAudience.slice(0, limit);
+    const topLikersContainer = document.querySelector('#user-analysis-page #top-likers-list');
+    const warmAudienceContainer = document.querySelector('#user-analysis-page #warm-audience-list');
 
-  // Önceki sonuçları temizle
-  topLikersContainer.innerHTML = '';
-  warmAudienceContainer.innerHTML = '';
-  // CSS class'ını doğru şekilde ayarla
-  topLikersContainer.className = 'analysis-list-container';
-  warmAudienceContainer.className = 'analysis-list-container';
-  
-  // En Sadık Takipçileri render et
-  if (limitedTopLikers.length > 0) {
+    topLikersContainer.innerHTML = '';
+    warmAudienceContainer.innerHTML = '';
+
+    const limitedTopLikers = topLikers.slice(0, limit);
     limitedTopLikers.forEach(user => {
-      const listItem = document.createElement('li');
-      listItem.className = 'analysis-card'; // Yeni CSS class'ımız
-      listItem.innerHTML = `
-        <strong class="username">@${user.username}</strong>
-        <span class="full-name">${user.full_name || ''}</span>
-        <span class="like-count">${user.likeCount} Beğeni</span>
-      `;
-      topLikersContainer.appendChild(listItem);
+        const card = document.createElement('div');
+        card.className = 'analysis-card';
+        card.innerHTML = `
+            <strong class="username">@${user.username}</strong>
+            <span class="full-name">${user.full_name || ''}</span>
+            <span class="like-count">${user.likeCount} Beğeni</span>
+        `;
+        topLikersContainer.appendChild(card);
     });
-  } else {
-    topLikersContainer.innerHTML = '<p>Analiz edilecek veri bulunamadı.</p>';
-  }
 
-  // İlgili Kitleyi render et
-  if (limitedWarmAudience.length > 0) {
+    const limitedWarmAudience = warmAudience.slice(0, limit);
     limitedWarmAudience.forEach(user => {
-      const listItem = document.createElement('li');
-      listItem.className = 'analysis-card'; // Yeni CSS class'ımız
-      listItem.innerHTML = `
-        <strong class="username">@${user.username}</strong>
-        <span class="full-name">${user.full_name || ''}</span>
-      `;
-      warmAudienceContainer.appendChild(listItem);
+        const card = document.createElement('div');
+        card.className = 'analysis-card';
+        card.innerHTML = `
+            <strong class="username">@${user.username}</strong>
+            <span class="full-name">${user.full_name || ''}</span>
+        `;
+        warmAudienceContainer.appendChild(card);
     });
-  } else {
-    warmAudienceContainer.innerHTML = '<p>Analiz edilecek veri bulunamadı.</p>';
-  }
-
-  // Kontrol ve export butonunu göster
-  document.getElementById('analysis-controls').style.display = 'flex';
 }
+
+
+// =================================================================================
+// --- "HARİTA YORUMLARI" SAYFASI İÇİN RENDER FONKSİYONLARI ---
+// =================================================================================
+
+/**
+ * Harita API'sinden gelen işletme arama sonuçlarını listeler.
+ * @param {HTMLElement} container - Sonuçların ekleneceği element.
+ * @param {Array} businesses - İşletme nesnelerinden oluşan dizi.
+ * @param {Function} onBusinessClick - Bir işletmeye tıklandığında çalışacak olan callback fonksiyonu.
+ */
+export function renderBusinessResults(container, businesses, onBusinessClick) {
+    container.innerHTML = '';
+    
+    if (!businesses || businesses.length === 0) {
+        container.innerHTML = '<p class="data-status-text">Bu arama için sonuç bulunamadı.</p>';
+        return;
+    }
+
+    businesses.forEach(business => {
+        const item = document.createElement('div');
+        item.className = 'location-item'; // Mevcut stilimizi yeniden kullanabiliriz
+        item.innerHTML = `
+            <strong>${business.name}</strong>
+            <small>${business.full_address || 'Adres bilgisi yok'}</small>
+        `;
+        // Tıklandığında tüm işletme nesnesini callback'e gönder
+        item.addEventListener('click', () => onBusinessClick(business));
+        container.appendChild(item);
+    });
+}
+
+/**
+ * Harita API'sinden gelen yorumları, filtreleriyle birlikte render eder.
+ * @param {HTMLElement} container - Yorumların ve filtrelerin ekleneceği ana element.
+ * @param {object} data - Yorumları içeren tam API yanıtı.
+ * @param {string} activeFilter - O an aktif olan filtre ('all', '5', '4' vb.).
+ */
+export function renderReviews(container, data, activeFilter = 'all') {
+    if (!data) {
+        container.innerHTML = '<p>Analiz için bir işletme seçin.</p>';
+        return;
+    }
+
+    const reviews = data.reviews || (data.data && data.data.reviews) || [];
+    const name = data.name || (data.data && data.data.name) || 'Yorumlar';
+    const rating = data.rating || (data.data && data.data.rating);
+
+    // Filtreleme mantığı
+    const filteredReviews = activeFilter === 'all'
+        ? reviews
+        : reviews.filter(review => review.rating == activeFilter);
+
+    // Tüm HTML'i tek bir değişkende oluştur
+    let contentHtml = `
+        <div id="review-filters">
+            <button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-rating="all">Tümü</button>
+            <button class="filter-btn ${activeFilter === '5' ? 'active' : ''}" data-rating="5">5 ★</button>
+            <button class="filter-btn ${activeFilter === '4' ? 'active' : ''}" data-rating="4">4 ★</button>
+            <button class="filter-btn ${activeFilter === '3' ? 'active' : ''}" data-rating="3">3 ★</button>
+            <button class="filter-btn ${activeFilter === '2' ? 'active' : ''}" data-rating="2">2 ★</button>
+            <button class="filter-btn ${activeFilter === '1' ? 'active' : ''}" data-rating="1">1 ★</button>
+        </div>
+    `;
+
+    if (filteredReviews.length === 0) {
+        contentHtml += '<p class="data-status-text">Bu filtre için yorum bulunamadı.</p>';
+    } else {
+        filteredReviews.forEach(review => {
+            const reviewDate = new Date(review.review_datetime_utc).toLocaleDateString(undefined, {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+            contentHtml += `
+                <div class="review-card">
+                    <div class="review-card-header">
+                        <div class="review-card-author">
+                            <strong>${review.author_name}</strong>
+                            <small>${reviewDate}</small>
+                        </div>
+                        <div class="review-card-rating">${review.rating} ★</div>
+                    </div>
+                    <p class="review-text">${review.review_text}</p>
+                </div>
+            `;
+        });
+    }
+
+    // Oluşturulan tüm HTML'i tek seferde konteynerin içine bas
+    container.innerHTML = contentHtml;
+}
+

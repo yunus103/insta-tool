@@ -1,127 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Insta Analiz</title>
+    <!-- Google Fonts: Inter font ailesini yüklüyoruz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Yeni CSS dosyamızın bağlantısı -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome ikonları için (isteğe bağlı ama önerilir) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
+    <!-- Yüklenme animasyonu ve bildirimler gibi global elementler -->
     <div id="loader" class="loader-overlay">
         <div class="spinner"></div>
     </div>
+    <div id="toast-container"></div>
 
-  <main>
-    <h1>Location Post Finder</h1>
-    <button id="theme-toggle" title="Toggle theme">🌙</button>
-    <section id="search-bar">
-      <input 
-        type="text" 
-        id="search-input" 
-        placeholder="Bir konum girin..."
-      >
-      <button id="search-btn">Ara</button>
-    </section>
+    <!-- Ana Uygulama Kapsayıcısı -->
+    <div class="app-container">
+        <!-- 1. Kenar Çubuğu (Sidebar) Navigasyonu -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>Analiz Paneli</h3>
+            </div>
+            <ul class="sidebar-nav">
+                <!-- Her bir link bir "sanal sayfayı" kontrol edecek -->
+                <li class="nav-item active" data-page="insta-location-page">
+                    <a href="#"><i class="fas fa-map-marker-alt"></i> Konum Gönderi</a>
+                </li>
+                <li class="nav-item" data-page="user-analysis-page">
+                    <a href="#"><i class="fas fa-users"></i> Kullanıcı Analizi</a>
+                </li>
+                <li class="nav-item" data-page="maps-reviews-page">
+                    <a href="#"><i class="fas fa-star"></i> Maps Yorumları</a>
+                </li>
+            </ul>
+        </nav>
 
-    <div class="info-text-container">
-        <p class="search-info-text">💡- Konum sorgulamak için doğrudan konum adı giriniz: 'İstanbul' <br> 
-           💡- Hesap sorgulamak için başında '@' kullanıcı adı giriniz: '@kullaniciadi' </p>
+        <!-- 2. Ana İçerik Alanı -->
+        <main class="main-content">
+            <!-- Üst Başlık ve Global Arama Çubuğu -->
+            <header class="app-header">
+                <button id="sidebar-toggle-btn" class="sidebar-toggle" title="Menüyü Aç/Kapat">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <h1 id="page-title">Konum Gönderi</h1>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Arama yapın...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                 <button id="theme-toggle" title="Temayı değiştir">🌙</button>
+            </header>
+
+            <!-- Sanal Sayfaların Bulunduğu Alan -->
+            <div class="pages-container">
+
+                <!-- Sayfa 1: Konum Gönderileri -->
+                <section id="insta-location-page" class="page active-page">
+                    <div class="search-results-header"></div>
+                    <!-- Arama sonuçları (lokasyon listesi) buraya gelecek -->
+                    <div id="location-results-container"></div>
+                    <!-- Post'ların gösterileceği grid alanı -->
+                    <div id="posts-grid-container"></div>
+                    <button id="load-more-posts-btn" style="display:none;">Daha Fazla Yükle</button>
+                </section>
+
+                <!-- Sayfa 2: Kullanıcı Analizi -->
+                <section id="user-analysis-page" class="page">
+                    <div class="search-results-header"></div>
+                    <nav class="tab-nav">
+                        <button class="tab-btn active" data-tab="own-post-likers-panel">Gönderi Beğenenleri</button>
+                        <button class="tab-btn" data-tab="tagged-post-likers-panel">Etiket Beğenenleri</button>
+                        <button class="tab-btn" data-tab="potential-customers-panel">Potansiyel Müşteriler</button>
+                    </nav>
+                    <div class="tab-content">
+                        <!-- Panel 1: Gönderi Beğenenleri -->
+                        <div id="own-post-likers-panel" class="tab-panel active">
+                            <p id="own-likers-status" class="data-status-text">Analiz için bir @kullanıcıadı arayın.</p>
+                            <ul id="own-posts-likers-list" class="liker-grid-container"></ul>
+                            <button id="load-more-own-likers-btn" class="load-more-secondary-btn" style="display:none;">Daha Fazla Yükle</button>
+                        </div>
+
+                        <!-- Panel 2: Etiket Beğenenleri -->
+                        <div id="tagged-post-likers-panel" class="tab-panel">
+                            <p id="tagged-likers-status" class="data-status-text">Veriler çekildikten sonra burada görünecek.</p>
+                            <ul id="tagged-posts-likers-list" class="liker-grid-container"></ul>
+                            <button id="load-more-tagged-likers-btn" class="load-more-secondary-btn" style="display:none;">Daha Fazla Yükle</button>
+                        </div>
+
+                        <!-- Panel 3: Potansiyel Müşteriler -->
+                        <div id="potential-customers-panel" class="tab-panel">
+                            <!-- EKSİK OLAN BUTONUN OLDUĞU DOĞRU YAPI -->
+                            <div class="analytics-header">
+                                <h2>Potansiyel Müşteri Analizi</h2>
+                                <button id="analyze-data-btn">Saklanan Veriyi Analiz Et</button>
+                            </div>
+                            <div id="analysis-controls" style="display:none;">
+                                <div class="limit-control">
+                                    <label for="analysis-limit-input">Gösterilecek Kişi Sayısı:</label>
+                                    <input type="number" id="analysis-limit-input" value="50" min="10" max="1000">
+                                </div>
+                                <button id="export-analysis-btn">Excel'e Aktar</button>
+                            </div>
+                            <div id="analysis-results-container">
+                                <div class="data-section">
+                                    <h3>En Sadık Takipçiler (Beğeni Sayısına Göre)</h3>
+                                    <ul id="top-likers-list" class="analysis-list-container"></ul>
+                                </div>
+                                <div class="data-section">
+                                    <h3>İlgili Kitle (Etiketli Gönderi Beğenileri)</h3>
+                                    <ul id="warm-audience-list" class="analysis-list-container"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sayfa 3: Harita Yorumları -->
+                <section id="maps-reviews-page" class="page">
+                    <div class="search-results-header"></div>
+                    <!-- İşletme arama sonuçları buraya gelecek -->
+                    <div id="business-search-results"></div>
+                    <!-- Yorumlar ve analizler buraya gelecek -->
+                    <div id="reviews-display-area"></div>
+                </section>
+            </div>
+        </main>
     </div>
 
-    <section id="location-results">
-      </section>
+    <!-- "Yukarı Çık" butonu gibi diğer global elementler -->
+    <button id="scrollToTopBtn" title="Yukarı çık">↑</button>
 
-     <!-- ADD THIS ENTIRE TAB CONTAINER SECTION -->
-    <!-- It's hidden by default and will be shown by JS after a location is selected -->
-    <section id="tab-container" style="display: none;">
-      <nav class="tab-nav">
-        <button class="tab-btn active" data-tab="posts">Gönderiler</button>
-        <button class="tab-btn" data-tab="analytics">Google Yorumlar</button>
-        <button class="tab-btn" data-tab="own-post-likers">Gönderi Beğenenleri</button>
-        <button class="tab-btn" data-tab="tagged-post-likers">Etiket Beğenenleri</button>
-        <button class="tab-btn" data-tab="potential-customers">Potansiyel Müşteriler</button>
-      </nav>
+    <!-- Yeni ana JavaScript dosyamız. Artık bir modül. -->
+    <script type="module" src="js/main.js"></script>
 
-
-      <div class="tab-content">
-        <!-- Panel 1: Posts (Active by default) -->
-        <div id="posts" class="tab-panel active">
-          <!-- WE MOVED THE POSTS CONTAINER AND LOAD MORE BUTTON HERE -->
-          <section id="posts-container"></section>
-          <button id="load-more-btn" style="display:none;">Daha Fazla</button>
-        </div>
-
-        <!-- Panel 2: Analytics -->
-        <div id="analytics" class="tab-panel">
-            <div class="analytics-header">
-                <h2>Google Maps Review Analysis</h2>
-                <button id="analyze-reviews-btn">Analyze Location</button>
-            </div>
-            <section id="business-summary"></section>
-            
-            <section id="reviews-container">
-                </section>
-        </div>
-
-        <!-- YENİ PANEL 1: Kullanıcının Kendi Gönderilerini Beğenenler -->
-        <div id="own-post-likers" class="tab-panel">
-            <div class="analytics-header">
-                <h2>Kullanıcının Gönderilerini Beğenenler</h2>
-            </div>
-            <p id="own-likers-status" class="data-status-text">Analiz için bir @kullanıcıadı arayın.</p>
-            <ul id="own-posts-likers-list" class="liker-grid-container"></ul>
-            <button id="load-more-own-likers-btn" class="load-more-secondary-btn" style="display:none;">Daha Fazla Yükle</button>
-        </div>
-
-        <!-- YENİ PANEL 2: Etiketlendiği Gönderileri Beğenenler -->
-        <div id="tagged-post-likers" class="tab-panel">
-            <div class="analytics-header">
-                <h2>Etiketlendiği Gönderileri Beğenenler</h2>
-            </div>
-            <p id="tagged-likers-status" class="data-status-text">Analiz için bir @kullanıcıadı arayın.</p>
-            <ul id="tagged-posts-likers-list" class="liker-grid-container"></ul>
-            <button id="load-more-tagged-likers-btn" class="load-more-secondary-btn" style="display:none;">Daha Fazla Yükle</button>
-        </div>
-
-        <div id="potential-customers" class="tab-panel">
-           <!-- Header: Başlık, Limit ve Analiz Butonu burada -->
-            <div class="analytics-header">
-                <h2>Potansiyel Müşteri Analizi</h2>
-                <div class="header-controls">
-                <div class="limit-control">
-                    <label for="analysis-limit-input">Kişi Sayısı:</label>
-                    <input type="number" id="analysis-limit-input" value="50" min="10" max="1000">
-                </div>
-                <button id="analyze-data-btn">Analiz Et</button>
-                </div>
-            </div>
-            
-            <!-- Export butonu için ayrı bir kontrol alanı (veri gelince görünecek) -->
-            <div id="analysis-controls" style="display:none;">
-                <button id="export-analysis-btn">Excel'e Aktar</button>
-            </div>
-
-            <div id="analysis-results-container">
-                <div class="data-section">
-                <h3>En Sadık Takipçiler (Beğeni Sayısına Göre)</h3>
-                <ul id="top-likers-list" class="user-list-container"></ul>
-                </div>
-                <div class="data-section">
-                <h3>İlgili Kitle (Etiketli Gönderi Beğenileri)</h3>
-                <ul id="warm-audience-list" class="user-list-container"></ul>
-                </div>
-            </div>
-            </div>
-                    
-        
-      </div>
-    </section>
-    <!-- END OF NEW TAB CONTAINER SECTION -->
-  </main>
-
-  <div id="toast-container"></div>
-
-  <button id="scrollToTopBtn" title="Go to top">↑</button>
-  <script type="module" src="js/app.js"></script>
 </body>
 </html>
